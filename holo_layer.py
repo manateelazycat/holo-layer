@@ -121,7 +121,15 @@ class HoloWindow(QWidget):
         else:
             painter.drawRect(self.rect())
 
-        if len(self.window_info) > 1:
+        if len(self.window_info) == 1:
+            # Draw 1 pixel mode-line when only
+            window_info = self.window_info[0]
+            [x, y, w, h, _] = window_info
+            [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
+
+            painter.setPen(self.active_window_border_color)
+            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y + int(h) - 1, int(w), 1)
+        elif len(self.window_info) > 1:
             # Draw inactive window border.
             for info in self.window_info:
                 [x, y, w, h, is_active_window] = info
