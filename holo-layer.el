@@ -86,8 +86,8 @@
   "The Holo-Layer Server.")
 
 (defvar holo-layer-python-file (expand-file-name "holo_layer.py" (if load-file-name
-                                                                           (file-name-directory load-file-name)
-                                                                         default-directory)))
+                                                                     (file-name-directory load-file-name)
+                                                                   default-directory)))
 
 (defvar holo-layer-server-port nil)
 
@@ -159,7 +159,7 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Call Python EPC function METHOD and ARGS asynchronously."
   (if (holo-layer-epc-live-p holo-layer-epc-process)
       (holo-layer-deferred-chain
-       (holo-layer-epc-call-deferred holo-layer-epc-process (read method) args))
+        (holo-layer-epc-call-deferred holo-layer-epc-process (read method) args))
     (setq holo-layer-first-call-method method)
     (setq holo-layer-first-call-args args)
     (holo-layer-start-process)))
@@ -180,15 +180,16 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
 (defun holo-layer-start-process ()
   "Start Holo-Layer process if it isn't started."
   (setq holo-layer-is-starting t)
-  (unless (holo-layer-epc-live-p holo-layer-epc-process)
+  (if (holo-layer-epc-live-p holo-layer-epc-process)
+      (remove-hook 'post-command-hook #'holo-layer-start-process)
     ;; start epc server and set `holo-layer-server-port'
     (holo-layer--start-epc-server)
     (let* ((holo-layer-args (append
-                                (list holo-layer-python-file)
-                                (list (number-to-string holo-layer-server-port))
-                                (when holo-layer-enable-profile
-                                  (list "profile"))
-                                )))
+                             (list holo-layer-python-file)
+                             (list (number-to-string holo-layer-server-port))
+                             (when holo-layer-enable-profile
+                               (list "profile"))
+                             )))
 
       ;; Set process arguments.
       (if holo-layer-enable-debug
@@ -235,28 +236,156 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
 
 (defun holo-layer--first-start (holo-layer-epc-port)
   "Call `holo-layer--open-internal' upon receiving `start_finish' signal from server."
+  (setq holo-layer-emacs-frame (window-frame))
+
   ;; Make EPC process.
   (setq holo-layer-epc-process (make-holo-layer-epc-manager
-                                   :server-process holo-layer-internal-process
-                                   :commands (cons holo-layer-internal-process-prog holo-layer-internal-process-args)
-                                   :title (mapconcat 'identity (cons holo-layer-internal-process-prog holo-layer-internal-process-args) " ")
-                                   :port holo-layer-epc-port
-                                   :connection (holo-layer-epc-connect "127.0.0.1" holo-layer-epc-port)
-                                   ))
+                                :server-process holo-layer-internal-process
+                                :commands (cons holo-layer-internal-process-prog holo-layer-internal-process-args)
+                                :title (mapconcat 'identity (cons holo-layer-internal-process-prog holo-layer-internal-process-args) " ")
+                                :port holo-layer-epc-port
+                                :connection (holo-layer-epc-connect "127.0.0.1" holo-layer-epc-port)
+                                ))
   (holo-layer-epc-init-epc-layer holo-layer-epc-process)
   (setq holo-layer-is-starting nil)
 
   (when (and holo-layer-first-call-method
              holo-layer-first-call-args)
     (holo-layer-deferred-chain
-     (holo-layer-epc-call-deferred holo-layer-epc-process
-                                      (read holo-layer-first-call-method)
-                                      holo-layer-first-call-args)
-     (setq holo-layer-first-call-method nil)
-     (setq holo-layer-first-call-args nil)
-     ))
+      (holo-layer-epc-call-deferred holo-layer-epc-process
+                                    (read holo-layer-first-call-method)
+                                    holo-layer-first-call-args)
+      (setq holo-layer-first-call-method nil)
+      (setq holo-layer-first-call-args nil)
+      )))
 
-  (message "*******"))
+(defun holo-layer-emacs-running-in-wayland-native ()
+  (eq window-system 'pgtk))
+
+(defun holo-layer--get-titlebar-height ()
+  "We need fetch height of window titlebar to adjust y coordinate of EAF when Emacs is not fullscreen."
+  (cond ((holo-layer-emacs-running-in-wayland-native)
+         (let ((is-fullscreen-p (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))))
+           (if is-fullscreen-p
+               0
+             ;; `32' is titlebar of Gnome3, we need change this value in other environment.
+             (cond ((string-equal (getenv "XDG_CURRENT_DESKTOP") "Hyprland")
+                    0)
+                   (t
+                    32)))))
+        (t
+         0)))
+
+(defvar holo-layer-build-dir (file-name-directory (locate-library "holo-layer")))
+
+(defun holo-layer--get-frame-coordinate ()
+  "We need fetch Emacs coordinate to adjust coordinate of EAF if it running on system not support cross-process reparent technology.
+
+Such as, wayland native, macOS etc."
+  (cond ((string-equal (getenv "XDG_CURRENT_DESKTOP") "sway")
+         (holo-layer--split-number (shell-command-to-string (concat holo-layer-build-dir "swaymsg-treefetch/swaymsg-rectfetcher.sh emacs"))))
+        ((string-equal (getenv "XDG_CURRENT_DESKTOP") "Hyprland")
+         (let ((clients (json-parse-string (shell-command-to-string "hyprctl -j clients")))
+               (coordinate))
+           (dotimes (i (length clients))
+             (when (equal (gethash "pid" (aref clients i)) (emacs-pid))
+               (setq coordinate (gethash "at" (aref clients i)))))
+           (list (aref coordinate 0) (aref coordinate 1))))
+        ((holo-layer-emacs-running-in-wayland-native)
+         (require 'dbus)
+         (let* ((coordinate (holo-layer--split-number
+                             (dbus-call-method :session "org.gnome.Shell" "/org/eaf/wayland" "org.eaf.wayland" "get_emacs_window_coordinate" :timeout 1000)
+                             ","))
+                ;; HiDPI need except by `frame-scale-factor'.
+                (frame-x (truncate (/ (car coordinate) (frame-scale-factor))))
+                (frame-y (truncate (/ (cadr coordinate) (frame-scale-factor)))))
+           (list frame-x frame-y)))
+        (t
+         (list 0 0))))
+
+(defun holo-layer-get-window-allocation (&optional window)
+  "Get WINDOW allocation."
+  (let* ((window-edges (window-pixel-edges window))
+         (x (nth 0 window-edges))
+         (y (+ (nth 1 window-edges)
+               (if (version< emacs-version "27.0")
+                   (window-header-line-height window)
+                 (window-tab-line-height window))))
+         (w (- (nth 2 window-edges) x))
+         (h (- (nth 3 window-edges) (window-mode-line-height window) y)))
+    (list x y w h)))
+
+(defun holo-layer--split-number (string)
+  (mapcar #'string-to-number (split-string string)))
+
+(defun holo-layer--frame-left (frame)
+  "Return outer left position"
+  (let ((left (frame-parameter frame 'left)))
+    (if (listp left) (nth 1 left) left)))
+
+(defun holo-layer--buffer-x-position-adjust (frame)
+  "Adjust the x position of EAF buffers for macOS"
+  (if (eq system-type 'darwin)
+      (holo-layer--frame-left frame)
+    0))
+
+(defun holo-layer--frame-top (frame)
+  "Return outer top position."
+  (let ((top (frame-parameter frame 'top)))
+    (if (listp top) (nth 1 top) top)))
+
+(defun holo-layer--frame-internal-height (frame)
+  "Height of internal objects.
+Including title-bar, menu-bar, offset depends on window system, and border."
+  (let ((geometry (frame-geometry frame)))
+    (+ (cdr (alist-get 'title-bar-size geometry))
+       (cdr (alist-get 'tool-bar-size geometry)))))
+
+(defun holo-layer--buffer-y-position-adjust (frame)
+  "Adjust the y position of EAF buffers for macOS"
+  (if (eq system-type 'darwin)
+      (+ (holo-layer--frame-top frame) (holo-layer--frame-internal-height frame))
+    0))
+
+(defun holo-layer-monitor-configuration-change (&rest _)
+  "EAF function to respond when detecting a window configuration change."
+  (when (and (holo-layer-epc-live-p holo-layer-epc-process)
+             ;; When current frame is same with `emacs-frame'.
+             (equal (window-frame) holo-layer-emacs-frame))
+    (ignore-errors
+      (let (view-infos)
+        (dolist (frame (frame-list))
+          (dolist (window (window-list frame))
+            (with-current-buffer (window-buffer window)
+              (if (and (require 'eaf nil t)
+                       eaf-fullscreen-p
+                       (equal (length (cl-remove-if #'window-dedicated-p (window-list frame))) 1))
+                  (holo-layer-call-async "update_window_info" "")
+                (let* ((window-allocation (holo-layer-get-window-allocation window))
+                       (window-divider-right-padding (if window-divider-mode window-divider-default-right-width 0))
+                       (window-divider-bottom-padding (if window-divider-mode window-divider-default-bottom-width 0))
+                       (titlebar-height (holo-layer--get-titlebar-height))
+                       (frame-coordinate (holo-layer--get-frame-coordinate))
+                       (frame-x (car frame-coordinate))
+                       (frame-y (cadr frame-coordinate))
+                       (x (+ (holo-layer--buffer-x-position-adjust frame) (nth 0 window-allocation)))
+                       (y (+ (holo-layer--buffer-y-position-adjust frame) (nth 1 window-allocation)))
+                       (w (nth 2 window-allocation))
+                       (h (nth 3 window-allocation)))
+                  (push (format "%s:%s:%s:%s"
+                                (+ x frame-x)
+                                (+ y titlebar-height frame-y)
+                                (- w window-divider-right-padding)
+                                (- h window-divider-bottom-padding))
+                        view-infos))))))
+        (holo-layer-call-async "update_window_info" (mapconcat #'identity view-infos ","))
+        ))))
+
+(defun holo-layer-enable ()
+  (add-hook 'post-command-hook #'holo-layer-start-process)
+
+  (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
+  (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change))
 
 (unless holo-layer-is-starting
   (holo-layer-start-process))
