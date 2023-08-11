@@ -22,7 +22,6 @@ import queue
 import sys
 import threading
 import traceback
-import os
 
 from epc.server import ThreadingEPCServer
 from utils import *
@@ -33,17 +32,21 @@ class HoloLayer:
         # Init EPC client port.
         init_epc_client(int(args[0]))
 
+        # Init vars.
+        self.window_info_args = None
+        self.window_info = []
+
         # Build EPC server.
         self.server = ThreadingEPCServer(('127.0.0.1', 0), log_traceback=True)
         self.server.logger.setLevel(logging.DEBUG)
         self.server.allow_reuse_address = True
 
-        ch = logging.FileHandler(filename=os.path.expanduser("~/holo-layer.log"), mode='w')
-        formatter = logging.Formatter('%(asctime)s | %(levelname)-8s | %(lineno)04d | %(message)s')
-        ch.setFormatter(formatter)
-        ch.setLevel(logging.DEBUG)
-        self.server.logger.addHandler(ch)
-        self.server.logger = logger
+        # ch = logging.FileHandler(filename=os.path.expanduser("~/holo-layer.log"), mode='w')
+        # formatter = logging.Formatter('%(asctime)s | %(levelname)-8s | %(lineno)04d | %(message)s')
+        # ch.setFormatter(formatter)
+        # ch.setLevel(logging.DEBUG)
+        # self.server.logger.addHandler(ch)
+        # self.server.logger = logger
 
         self.server.register_instance(self)  # register instance functions let elisp side call
 
@@ -71,9 +74,17 @@ class HoloLayer:
         except:
             logger.error(traceback.format_exc())
 
-    @PostGui()
     def update_window_info(self, args):
-        print("********* ", args)
+        if args != self.window_info_args:
+            self.window_info_args = args
+
+            if self.window_info_args == "":
+                self.window_info = []
+            else:
+                self.window_info = list(map(lambda info: list(map(int, info.split(":"))),
+                                            self.window_info_args.split(",")))
+
+            print("********* ", self.window_info)
 
     def cleanup(self):
         """Do some cleanup before exit python process."""
