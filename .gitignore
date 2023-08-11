@@ -1,0 +1,8 @@
+*.elc
+*.pyc
+/.log/
+node_modules/
+dist/
+tags
+test.log
+workspace/
