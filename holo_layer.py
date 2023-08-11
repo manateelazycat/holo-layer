@@ -144,9 +144,9 @@ class HoloWindow(QWidget):
 
         if int(x) + int(w) >= emacs_x + emacs_width:
             # Width need -1 if window is at rightest of Emacs.
-            painter.drawRect(int(x), int(y), int(w) - 1, int(h))
+            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y, int(w) - 1, int(h))
         else:
-            painter.drawRect(int(x), int(y), int(w), int(h))
+            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y, int(w), int(h))
 
     def update_info(self, emacs_frame_info, window_info):
         self.emacs_frame_info = emacs_frame_info
