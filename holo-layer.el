@@ -147,10 +147,6 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable this option to print log message in `*holo-layer*' buffer, default only print message header."
   :type 'boolean)
 
-(defcustom holo-layer-enable-profile nil
-  "Enable this option to output performance data to ~/holo-layer.prof."
-  :type 'boolean)
-
 (defun holo-layer--user-emacs-directory ()
   "Get lang server with project path, file path or file extension."
   (expand-file-name user-emacs-directory))
@@ -187,8 +183,6 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
     (let* ((holo-layer-args (append
                              (list holo-layer-python-file)
                              (list (number-to-string holo-layer-server-port))
-                             (when holo-layer-enable-profile
-                               (list "profile"))
                              )))
 
       ;; Set process arguments.
@@ -257,7 +251,9 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
                                     holo-layer-first-call-args)
       (setq holo-layer-first-call-method nil)
       (setq holo-layer-first-call-args nil)
-      )))
+      ))
+
+  (holo-layer-monitor-configuration-change))
 
 (defun holo-layer-emacs-running-in-wayland-native ()
   (eq window-system 'pgtk))
@@ -352,17 +348,45 @@ Including title-bar, menu-bar, offset depends on window system, and border."
            (and (require 'sort-tab nil t)
                 (string-equal (buffer-name (window-buffer window)) sort-tab-buffer-name)))))
 
+(defun holo-layer-get-emacs-frame-info ()
+  (let ((pos (frame-position))
+        (width (frame-pixel-width))
+        (height (frame-pixel-height))
+        (external-border-size (rest (nth 2 (frame-geometry))))
+        (title-bar-size (rest (nth 4 (frame-geometry)))))
+    (list (+ (car pos) (car external-border-size) (car title-bar-size))
+          (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
+          width
+          height)))
+
+(defun holo-layer-eaf-fullscreen-p ()
+  (and (require 'eaf nil t)
+       eaf-fullscreen-p
+       (equal (length (cl-remove-if #'window-dedicated-p (window-list frame))) 1)))
+
+(defvar holo-layer-emacs-is-focus-p t
+  "Whether Emacs is currently focused.")
+
+(defun holo-layer-focus-in-hook-function ()
+  (setq holo-layer-emacs-is-focus-p t)
+  (holo-layer-monitor-configuration-change))
+
+(defun holo-layer-focus-out-hook-function ()
+  (setq holo-layer-emacs-is-focus-p nil)
+  (holo-layer-monitor-configuration-change))
+
 (defun holo-layer-monitor-configuration-change (&rest _)
   "EAF function to respond when detecting a window configuration change."
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              ;; When current frame is same with `emacs-frame'.
              (equal (window-frame) holo-layer-emacs-frame))
     (ignore-errors
-      (if (and (require 'eaf nil t)
-               eaf-fullscreen-p
-               (equal (length (cl-remove-if #'window-dedicated-p (window-list frame))) 1))
-          (holo-layer-call-async "update_window_info" "")
-        (let (view-infos)
+      (let ((emacs-frame-info (holo-layer-get-emacs-frame-info))
+            (current-window (selected-window))
+            view-infos)
+        (if (or (not holo-layer-emacs-is-focus-p)
+                (holo-layer-eaf-fullscreen-p))
+            (holo-layer-call-async "update_window_info" emacs-frame-info "")
           (dolist (frame (frame-list))
             (dolist (window (window-list frame))
               (when (and (equal (window-frame window) holo-layer-emacs-frame)
@@ -379,20 +403,27 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                          (y (+ (holo-layer--buffer-y-position-adjust frame) (nth 1 window-allocation)))
                          (w (nth 2 window-allocation))
                          (h (nth 3 window-allocation)))
-                    (push (format "%s:%s:%s:%s"
+                    (push (format "%s:%s:%s:%s:%s"
                                   (+ x frame-x)
                                   (+ y titlebar-height frame-y)
                                   (- w window-divider-right-padding)
-                                  (- h window-divider-bottom-padding))
+                                  (- h window-divider-bottom-padding)
+                                  (equal window current-window))
                           view-infos))))))
-          (holo-layer-call-async "update_window_info" (mapconcat #'identity view-infos ","))
+          (holo-layer-call-async "update_window_info" emacs-frame-info (mapconcat #'identity view-infos ","))
           )))))
 
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
-  (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change))
+  (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
+  (add-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
+
+  (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
+  (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
+
+  (setq-default mode-line-format nil))
 
 (unless holo-layer-is-starting
   (holo-layer-start-process))
