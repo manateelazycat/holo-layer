@@ -147,6 +147,14 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable this option to print log message in `*holo-layer*' buffer, default only print message header."
   :type 'boolean)
 
+(defcustom holo-layer-active-window-color "#cc2444"
+  "Border color for active window."
+  :type 'string)
+
+(defcustom holo-layer-inactive-window-color "#000000"
+  "Border color for active window."
+  :type 'string)
+
 (defun holo-layer--user-emacs-directory ()
   "Get lang server with project path, file path or file extension."
   (expand-file-name user-emacs-directory))

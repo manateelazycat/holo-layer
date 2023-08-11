@@ -85,6 +85,9 @@ class HoloWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
 
+        self.active_window_border_color = None
+        self.inactive_window_border_color = None
+
         self.emacs_frame_info = None
         self.window_info = []
 
@@ -100,6 +103,14 @@ class HoloWindow(QWidget):
         self.showFullScreen()
 
     def paintEvent(self, event):
+        if self.active_window_border_color is None:
+            (active_window_border_color,
+             inactive_window_border_color) = get_emacs_vars(["holo-layer-active-window-color",
+                                                             "holo-layer-inactive-window-color"])
+
+            self.active_window_border_color = QColor(active_window_border_color)
+            self.inactive_window_border_color = QColor(inactive_window_border_color)
+
         painter = QPainter(self)
         background_color = QColor(0, 0, 0, 0)
         painter.setBrush(background_color)
@@ -111,21 +122,20 @@ class HoloWindow(QWidget):
             painter.drawRect(self.rect())
 
         if len(self.window_info) > 1:
-            active_color = QColor(100, 0, 0)
-            inactive_color = QColor(0, 0, 0)
-
+            # Draw inactive window border.
             for info in self.window_info:
                 [x, y, w, h, is_active_window] = info
 
                 if is_active_window == "nil":
-                    painter.setPen(inactive_color)
+                    painter.setPen(self.inactive_window_border_color)
                     self.draw_window_border(painter, info)
 
+            # Draw active window border.
             for info in self.window_info:
                 [x, y, w, h, is_active_window] = info
 
                 if is_active_window == "t":
-                    painter.setPen(active_color)
+                    painter.setPen(self.active_window_border_color)
                     self.draw_window_border(painter, info)
 
     def draw_window_border(self, painter, info):
