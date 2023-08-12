@@ -360,8 +360,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (let ((pos (frame-position))
         (width (frame-pixel-width))
         (height (frame-pixel-height))
-        (external-border-size (rest (nth 2 (frame-geometry))))
-        (title-bar-size (rest (nth 4 (frame-geometry)))))
+        (external-border-size (cdr (nth 2 (frame-geometry))))
+        (title-bar-size (or (cdr (nth 4 (frame-geometry)))
+                            (cons 0 0))))
     (list (+ (car pos) (car external-border-size) (car title-bar-size))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
           width

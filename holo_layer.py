@@ -19,11 +19,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
+import platform
 import threading
 import signal
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor, QScreen, QGuiApplication
 
 from epc.server import ThreadingEPCServer
 from utils import *
@@ -91,16 +92,25 @@ class HoloWindow(QWidget):
         self.emacs_frame_info = None
         self.window_info = []
 
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
-
         self.setStyleSheet("border: none;")
         self.setContentsMargins(0, 0, 0, 0)
-
-        # Make sure window transparent.
         self.setStyleSheet("background-color:transparent;")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        self.showFullScreen()
+        if platform.system() == "Darwin":
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.NoDropShadowWindowHint| Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus)
+
+            # for Mac, we need to set the window to the screen size
+            screen = QGuiApplication.primaryScreen()
+            screen_geometry = screen.availableGeometry()
+            self.window_bias_x, self.window_bias_y = screen_geometry.x(), screen_geometry.y()
+            self.setGeometry(screen_geometry)
+            self.show()
+        else:
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.WindowTransparentForInput)
+
+            self.window_bias_x, self.window_bias_y = 0, 0
+            self.showFullScreen()
 
     def paintEvent(self, event):
         if self.active_window_border_color is None:
@@ -128,7 +138,7 @@ class HoloWindow(QWidget):
             [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
 
             painter.setPen(self.active_window_border_color)
-            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y + int(h) - 1, int(w), 1)
+            painter.drawRect(x + emacs_x, y + emacs_y + h - 1, w, 1)
         elif len(self.window_info) > 1:
             # Draw inactive window border.
             for info in self.window_info:
@@ -150,13 +160,20 @@ class HoloWindow(QWidget):
         [x, y, w, h, is_active_window] = info
         [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
 
-        if int(x) + int(w) >= emacs_x + emacs_width:
+        if x + w >= emacs_x + emacs_width:
             # Width need -1 if window is at rightest of Emacs.
-            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y, int(w) - 1, int(h))
+            painter.drawRect(x + emacs_x, y + emacs_y, w - 1, h)
         else:
-            painter.drawRect(int(x) + emacs_x, int(y) + emacs_y, int(w), int(h))
+            painter.drawRect(x + emacs_x, y + emacs_y, w, h)
 
     def update_info(self, emacs_frame_info, window_info):
+        emacs_frame_info[0] -= self.window_bias_x
+        emacs_frame_info[1] -= self.window_bias_y
+        for i in range(len(window_info)):
+            [x, y, w, h, is_active_window] = window_info[i]
+            window_info[i] = [int(x) - self.window_bias_x, int(y) - self.window_bias_y,
+                              int(w), int(h), is_active_window]
+
         self.emacs_frame_info = emacs_frame_info
         self.window_info = window_info
         self.update()
