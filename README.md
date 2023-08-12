@@ -10,7 +10,7 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 4. Add the following code to your configuration file ~/.emacs:
 
 ```elisp
-(add-to-list 'load-path "/Users/royokong/holo-layer")
+(add-to-list 'load-path "<path-to-holo-layer>")
 (require 'holo-layer)
 (holo-layer-enable)
 ```
