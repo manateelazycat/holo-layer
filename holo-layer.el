@@ -260,8 +260,7 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
       (setq holo-layer-first-call-method nil)
       (setq holo-layer-first-call-args nil)
       ))
-
-  (holo-layer-monitor-configuration-change))
+  )
 
 (defun holo-layer-emacs-running-in-wayland-native ()
   (eq window-system 'pgtk))
@@ -327,12 +326,6 @@ Such as, wayland native, macOS etc."
   (let ((left (frame-parameter frame 'left)))
     (if (listp left) (nth 1 left) left)))
 
-(defun holo-layer--buffer-x-position-adjust (frame)
-  "Adjust the x position of EAF buffers for macOS"
-  (if (eq system-type 'darwin)
-      (holo-layer--frame-left frame)
-    0))
-
 (defun holo-layer--frame-top (frame)
   "Return outer top position."
   (let ((top (frame-parameter frame 'top)))
@@ -345,12 +338,6 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (+ (cdr (alist-get 'title-bar-size geometry))
        (cdr (alist-get 'tool-bar-size geometry)))))
 
-(defun holo-layer--buffer-y-position-adjust (frame)
-  "Adjust the y position of EAF buffers for macOS"
-  (if (eq system-type 'darwin)
-      (+ (holo-layer--frame-top frame) (holo-layer--frame-internal-height frame))
-    0))
-
 (defun holo-layer-is-normal-window-p (window)
   (not (or (minibufferp (window-buffer window))
            (and (require 'sort-tab nil t)
@@ -360,8 +347,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (let ((pos (frame-position))
         (width (frame-pixel-width))
         (height (frame-pixel-height))
-        (external-border-size (rest (nth 2 (frame-geometry))))
-        (title-bar-size (rest (nth 4 (frame-geometry)))))
+        (external-border-size (cdr (nth 2 (frame-geometry))))
+        (title-bar-size (or (cdr (nth 4 (frame-geometry)))
+                            (cons 0 0))))
     (list (+ (car pos) (car external-border-size) (car title-bar-size))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
           width
@@ -433,8 +421,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
            (frame-coordinate (holo-layer--get-frame-coordinate))
            (frame-x (car frame-coordinate))
            (frame-y (cadr frame-coordinate))
-           (x (+ (holo-layer--buffer-x-position-adjust frame) (nth 0 window-allocation)))
-           (y (+ (holo-layer--buffer-y-position-adjust frame) (nth 1 window-allocation)))
+           (x (nth 0 window-allocation))
+           (y (nth 1 window-allocation))
            (w (nth 2 window-allocation))
            (h (nth 3 window-allocation)))
       (format "%s:%s:%s:%s:%s"
@@ -455,6 +443,19 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
   (setq-default mode-line-format nil))
+
+(defun holo-layer-disable ()
+  (remove-hook 'post-command-hook #'holo-layer-start-process)
+
+  (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
+  (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
+  (remove-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
+
+  (remove-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
+  (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
+
+  ;; hide holo layer
+  (holo-layer-call-async "update_window_info" (holo-layer-get-emacs-frame-info) ""))
 
 (unless holo-layer-is-starting
   (holo-layer-start-process))
