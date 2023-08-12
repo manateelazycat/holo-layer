@@ -29,3 +29,9 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 1. 先安装 gdb 并打开选项 `(setq holo-layer-enable-debug t)`
 2. 使用命令 `holo-layer-stop-process` 停止 holo-layer 进程
 3. 重新打开 holo-layer, 并在下次崩溃时发送 `*holo-layer*` 的内容
+
+## 贡献者
+<a href = "https://github.com/manateelazycat/holo-layer/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=manateelazycat/holo-layer"/>
+</a>
+

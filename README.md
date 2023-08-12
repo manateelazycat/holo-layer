@@ -29,3 +29,8 @@ If you encounter a crash, please use the following method to collect crash infor
 1. First install gdb and turn on the option `(setq holo-layer-enable-debug t)`
 2. Use the command `holo-layer-stop-process` to stop the holo-layer process
 3. Reopen holo-layer, and send the content of `*holo-layer*` at the next crash
+
+## Contributors
+<a href = "https://github.com/manateelazycat/holo-layer/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=manateelazycat/holo-layer"/>
+</a>
