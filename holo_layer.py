@@ -22,9 +22,9 @@ import sys
 import platform
 import threading
 import signal
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QPointF, QTimer
 from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtGui import QPainter, QColor, QGuiApplication
+from PyQt6.QtGui import QPainter, QColor, QGuiApplication, QPolygonF
 
 from epc.server import ThreadingEPCServer
 from utils import *
@@ -38,6 +38,8 @@ class HoloLayer:
         # Init vars.
         self.window_info_args = None
         self.window_info = []
+        self.cursor_info_args = None
+        self.cursor_info = []
         self.emacs_frame_info = None
         self.holo_window = HoloWindow()
 
@@ -62,21 +64,28 @@ class HoloLayer:
         # Pass epc port and webengine codec information to Emacs when first start holo-layer.
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
 
-    def update_window_info(self, emacs_frame_info, window_info_args):
+    def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args):
         if window_info_args != self.window_info_args:
             self.window_info_args = window_info_args
+            self.cursor_info_args = cursor_info_args
             self.emacs_frame_info = emacs_frame_info
 
             if self.window_info_args == "":
                 self.window_info = []
+                self.cursor_info = []
             else:
                 self.window_info = list(map(lambda info: info.split(":"),
                                             self.window_info_args.split(",")))
+                self.cursor_info = self.cursor_info_args.split(':')
+            self.update()
+        elif cursor_info_args != self.cursor_info_args:
+            self.cursor_info_args = cursor_info_args
+            self.cursor_info = self.cursor_info_args.split(':')
             self.update()
 
     @PostGui()
     def update(self):
-        self.holo_window.update_info(self.emacs_frame_info, self.window_info)
+        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info)
 
     def cleanup(self):
         """Do some cleanup before exit python process."""
@@ -91,6 +100,18 @@ class HoloWindow(QWidget):
 
         self.emacs_frame_info = None
         self.window_info = []
+
+        self.cursor_info = []
+        self.cursor_prev_info = []
+        self.cursor_timer = QTimer(self)
+        self.cursor_timer.timeout.connect(self.cursor_animation_tik)
+        self.cursor_animation_percent = 1
+
+        (self.cursor_animation_duration,
+         self.cursor_animation_interval,
+         self.enable_cursor_animation) = get_emacs_vars(["holo-layer-cursor-animation-duration",
+                                                         "holo-layer-cursor-animation-interval",
+                                                         "holo-layer-enable-cursor-animation"])
 
         self.setStyleSheet("border: none;")
         self.setContentsMargins(0, 0, 0, 0)
@@ -115,11 +136,17 @@ class HoloWindow(QWidget):
     def paintEvent(self, event):
         if self.active_window_border_color is None:
             (active_window_border_color,
-             inactive_window_border_color) = get_emacs_vars(["holo-layer-active-window-color",
-                                                             "holo-layer-inactive-window-color"])
+             inactive_window_border_color,
+             cursor_color,
+             cursor_alpha) = get_emacs_vars(["holo-layer-active-window-color",
+                                             "holo-layer-inactive-window-color",
+                                             "holo-layer-cursor-color",
+                                             "holo-layer-cursor-alpha"])
 
             self.active_window_border_color = QColor(active_window_border_color)
             self.inactive_window_border_color = QColor(inactive_window_border_color)
+            self.cursor_color = QColor(cursor_color)
+            self.cursor_color.setAlpha(cursor_alpha)
 
         painter = QPainter(self)
         background_color = QColor(0, 0, 0, 0)
@@ -130,6 +157,14 @@ class HoloWindow(QWidget):
             painter.drawRect(*self.emacs_frame_info)
         else:
             painter.drawRect(self.rect())
+
+        if self.cursor_animation_percent < 1 and self.enable_cursor_animation:
+            # cursor animation
+            painter.setBrush(self.cursor_color)
+            painter.setPen(self.cursor_color)
+            polygon = self.cursor_animation_draw()
+            painter.drawPolygon(polygon)
+            painter.setBrush(background_color)
 
         if len(self.window_info) == 1:
             # Draw 1 pixel mode-line when only
@@ -166,7 +201,94 @@ class HoloWindow(QWidget):
         else:
             painter.drawRect(x + emacs_x, y + emacs_y, w, h)
 
-    def update_info(self, emacs_frame_info, window_info):
+    def create_cursor_move_animation(self):
+        [prev_x, prev_y, prev_w, prev_h] = self.cursor_prev_info
+        [x, y, w, h] = self.cursor_info
+
+        if prev_x != x or prev_y != y:
+            self.cursor_start = QPointF(prev_x, prev_y)
+            self.cursor_end = QPointF(x, y)
+            self.cursor_wh = [w, h]
+
+            self.elapsed_time = 0
+            #self.cursor_animation_tik()
+            self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
+            self.cursor_prev_info = self.cursor_info
+
+    def cursor_animation_tik(self):
+        self.elapsed_time += self.cursor_animation_interval
+
+        if self.elapsed_time >= self.cursor_animation_duration:
+            self.cursor_animation_percent = 1
+            self.cursor_timer.stop()
+            self.update()
+            return
+
+        self.cursor_animation_percent = self.elapsed_time / self.cursor_animation_duration
+        self.update()
+
+        self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
+
+    def cursor_animation_draw(self):
+        p = self.cursor_animation_percent # animation percent
+        cs = self.cursor_start # start point
+        ce = self.cursor_end # end point
+        [w, h] = self.cursor_wh
+        if (cs - ce).x() * (cs - ce).y() > 0:
+            points = [cs, cs + QPointF(w, h), ce + QPointF(w, h), ce]
+        elif (cs - ce).x() * (cs - ce).y() < 0 :
+            points = [cs + QPointF(0, h), cs + QPointF(w, 0), ce + QPointF(w, 0), ce + QPointF(0, h)]
+        # cursor down and up
+        elif (cs - ce).x() == 0 and (cs - ce).y() >= 0:
+            points = [cs + QPointF(0, h), cs + QPointF(w, h), ce + QPointF(w, 0), ce]
+        elif (cs - ce).x() == 0 and (cs - ce).y() < 0:
+            points = [cs, cs + QPointF(w, 0), ce + QPointF(w, h), ce + QPointF(0, h)]
+        # cursor left and right
+        elif (cs - ce).y() == 0 and (cs - ce).x() >= 0:
+            points = [cs + QPointF(w, 0), cs + QPointF(w, h), ce + QPointF(0, h), ce]
+        elif (cs - ce).y() == 0 and (cs - ce).x() < 0:
+            points = [cs, cs + QPointF(0, h), ce + QPointF(w, h), ce + QPointF(w, 0)]
+
+        if p < 0.5:
+            points[2] = points[2] * p * 2 + points[1] * (1 - p * 2)
+            points[3] = points[3] * p * 2 + points[0] * (1 - p * 2)
+        else:
+            points[0] = points[3] * (p - 0.5) * 2 + points[0] * (1 - (p - 0.5) * 2)
+            points[1] = points[2] * (p - 0.5) * 2 + points[1] * (1 - (p - 0.5) * 2)
+
+        return QPolygonF(points)
+
+    def update_cursor_info(self, cursor_info):
+        if len(cursor_info) == 0: return
+
+        [x, y, w, h] = cursor_info
+        if len(self.emacs_frame_info) > 1:
+            cursor_info = [int(x) - self.window_bias_x + int(w) + self.emacs_frame_info[0],
+                            int(y) - self.window_bias_y + self.emacs_frame_info[1],
+                            int(w), int(h)]
+        else:
+            cursor_info = [int(x) - self.window_bias_x + int(w), int(y) - self.window_bias_y,
+                            int(w), int(h)]
+        [x, y, w, h] = cursor_info
+
+        self.cursor_info = cursor_info
+        if len(self.cursor_prev_info) > 1 and \
+           (self.cursor_prev_info[0] != self.cursor_info[0] or
+            self.cursor_prev_info[1] != self.cursor_info[1]):
+
+            self.create_cursor_move_animation()
+            return True
+        elif len(self.cursor_prev_info) == 0:
+            self.cursor_prev_info = self.cursor_info
+            return False
+        else:
+            self.cursor_prev_info = self.cursor_info
+            self.cursor_animation_percent = 1
+            self.cursor_timer.stop()
+            return False
+
+
+    def update_info(self, emacs_frame_info, window_info, cursor_info):
         emacs_frame_info[0] -= self.window_bias_x
         emacs_frame_info[1] -= self.window_bias_y
         for i in range(len(window_info)):
@@ -176,7 +298,10 @@ class HoloWindow(QWidget):
 
         self.emacs_frame_info = emacs_frame_info
         self.window_info = window_info
-        self.update()
+
+        if not self.update_cursor_info(cursor_info):
+            # skip update if cursor position is changed.
+            self.update()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

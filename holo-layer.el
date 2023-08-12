@@ -155,6 +155,26 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Border color for active window."
   :type 'string)
 
+(defcustom holo-layer-enable-cursor-animation nil
+  "Enable cursor animation."
+  :type 'boolean)
+
+(defcustom holo-layer-cursor-color (face-background 'cursor)
+  "Cursor color."
+  :type 'string)
+
+(defcustom holo-layer-cursor-alpha 200
+  "Cursor alpha(0-255)."
+  :type 'interger)
+
+(defcustom holo-layer-cursor-animation-duration 200
+  "Animation duration for cursor (200ms)."
+  :type 'integer)
+
+(defcustom holo-layer-cursor-animation-interval 10
+  "Animation interval for cursor (10ms)."
+  :type 'integer)
+
 (defun holo-layer--user-emacs-directory ()
   "Get lang server with project path, file path or file extension."
   (expand-file-name user-emacs-directory))
@@ -166,7 +186,8 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
         (holo-layer-epc-call-deferred holo-layer-epc-process (read method) args))
     (setq holo-layer-first-call-method method)
     (setq holo-layer-first-call-args args)
-    (holo-layer-start-process)))
+    ;;(holo-layer-start-process)
+    ))
 
 (defvar holo-layer-is-starting nil)
 (defvar holo-layer-first-call-method nil)
@@ -371,6 +392,18 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (setq holo-layer-emacs-is-focus-p nil)
   (holo-layer-monitor-configuration-change))
 
+(defvar holo-layer-cache-emacs-frame-info nil)
+(defvar holo-layer-cache-window-info nil)
+(defvar holo-layer-last-point nil)
+
+(defun holo-layer-monitor-cursor-change ()
+  (when (not (equal holo-layer-last-point (point)))
+    (setq holo-layer-last-point (point))
+    (ignore-errors
+      (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
+          (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))
+        (holo-layer-monitor-configuration-change)))))
+
 (defun holo-layer-monitor-configuration-change (&rest _)
   "EAF function to respond when detecting a window configuration change."
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
@@ -384,7 +417,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
          ;; Support EAF fullscreen.
          ((or (not holo-layer-emacs-is-focus-p)
               (holo-layer-eaf-fullscreen-p))
-          (holo-layer-call-async "update_window_info" emacs-frame-info ""))
+          (holo-layer-call-async "update_window_info" emacs-frame-info "" ""))
          ;; Support blink-search.
          ((and (require 'blink-search nil t)
                (equal (buffer-name (window-buffer current-window)) blink-search-input-buffer))
@@ -401,7 +434,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                              (window-pixel-height (get-buffer-window blink-search-candidate-buffer)))
                           (equal current-window current-window))
                   view-infos)
-            (holo-layer-call-async "update_window_info" emacs-frame-info (mapconcat #'identity view-infos ","))))
+            (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
+            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info  (holo-layer-get-cursor-info))))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -409,8 +443,25 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (when (and (equal (window-frame window) holo-layer-emacs-frame)
                          (holo-layer-is-normal-window-p window))
                 (push (holo-layer-get-window-info frame window current-window) view-infos))))
-          (holo-layer-call-async "update_window_info" emacs-frame-info (mapconcat #'identity view-infos ",")))
-         )))))
+          (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
+          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
+        (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
+        ))))
+
+(defun holo-layer-get-cursor-info ()
+  "Get the pixel position of the cursor in the current window."
+  (interactive)
+  (unless (window-absolute-pixel-position)
+    ;; make cursor visble
+    (redisplay))
+
+  (let* ((coords (posn-x-y (posn-at-point (point))))
+         (window-allocation (holo-layer-get-window-allocation (selected-window)))
+         (x (+ (car coords) (nth 0 window-allocation)))
+         (y (+ (cdr coords) (nth 1 window-allocation)))
+         (w (frame-char-width nil))
+         (h (frame-char-height nil)))
+    (format "%s:%s:%s:%s" x y w h)))
 
 (defun holo-layer-get-window-info (frame window current-window)
   (with-current-buffer (window-buffer window)
@@ -435,6 +486,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
 
+  (when holo-layer-enable-cursor-animation
+    (add-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
+
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
   (add-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
@@ -446,6 +500,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defun holo-layer-disable ()
   (remove-hook 'post-command-hook #'holo-layer-start-process)
+
+  (when holo-layer-enable-cursor-animation
+    (remove-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
