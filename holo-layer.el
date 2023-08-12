@@ -260,8 +260,7 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
       (setq holo-layer-first-call-method nil)
       (setq holo-layer-first-call-args nil)
       ))
-
-  (holo-layer-monitor-configuration-change))
+  )
 
 (defun holo-layer-emacs-running-in-wayland-native ()
   (eq window-system 'pgtk))
@@ -444,6 +443,19 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
   (setq-default mode-line-format nil))
+
+(defun holo-layer-disable ()
+  (remove-hook 'post-command-hook #'holo-layer-start-process)
+
+  (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
+  (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
+  (remove-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
+
+  (remove-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
+  (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
+
+  ;; hide holo layer
+  (holo-layer-call-async "update_window_info" (holo-layer-get-emacs-frame-info) ""))
 
 (unless holo-layer-is-starting
   (holo-layer-start-process))

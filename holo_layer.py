@@ -24,7 +24,7 @@ import threading
 import signal
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtGui import QPainter, QColor, QScreen, QGuiApplication
+from PyQt6.QtGui import QPainter, QColor, QGuiApplication
 
 from epc.server import ThreadingEPCServer
 from utils import *
