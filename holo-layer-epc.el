@@ -693,7 +693,7 @@ This variable is used for the management purpose.")
 
 (defun holo-layer-epc-server-accept (process)
   "[internal] Initialize the process and return holo-layer-epc-manager object."
-  (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- >> Connection accept: %S" process)
+  (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- >> Connection accept: %S" process)
   (let* ((connection-id (holo-layer-epc-uid))
          (connection-name (format "holo-layer-epc con %s" connection-id))
          (channel (list connection-name nil))
@@ -702,7 +702,7 @@ This variable is used for the management purpose.")
                       :process process
                       :buffer (process-buffer process)
                       :channel channel)))
-    (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- >> Connection establish")
+    (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- >> Connection establish")
     (set-process-coding-system process 'binary 'binary)
     (set-process-filter process
                         (lambda (p m)
@@ -716,7 +716,7 @@ This variable is used for the management purpose.")
 
 (defun holo-layer-epc-server-sentinel (process message connect-function)
   "[internal] Process sentinel handler for the server process."
-  (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- SENTINEL: %S %S" process message)
+  (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- SENTINEL: %S %S" process message)
   (let ((mngr (holo-layer-epc-server-get-manager-by-process process)))
     (cond
      ;; new connection
@@ -728,8 +728,8 @@ This variable is used for the management purpose.")
             (when connect-function (funcall connect-function mngr))
             mngr)
         ('error
-         (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- Protocol error: %S" err)
-         (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- ABORT %S" process)
+         (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- Protocol error: %S" err)
+         (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- ABORT %S" process)
          (delete-process process))))
      ;; ignore
      ((null mngr) nil )
@@ -737,7 +737,7 @@ This variable is used for the management purpose.")
      (t
       (let ((pair (assq process holo-layer-epc-server-client-processes)) _d)
         (when pair
-          (holo-layer-epc-log "LSPBRIDGE-EPC-SERVER- DISCONNECT %S" process)
+          (holo-layer-epc-log "HOLOLAYER-EPC-SERVER- DISCONNECT %S" process)
           (holo-layer-epc-stop-epc (cdr pair))
           (setq holo-layer-epc-server-client-processes
                 (assq-delete-all process holo-layer-epc-server-client-processes))

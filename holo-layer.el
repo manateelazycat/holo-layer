@@ -1,14 +1,14 @@
-;;; holo-layer.el --- LSP bridge  -*- lexical-binding: t -*-
+;;; holo-layer.el --- Holo Layer  -*- lexical-binding: t -*-
 
 ;; Filename: holo-layer.el
-;; Description: LSP bridge
+;; Description: Holo Layer
 ;; Author: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Maintainer: Andy Stewart <lazycat.manatee@gmail.com>
 ;; Copyright (C) 2018, Andy Stewart, all rights reserved.
 ;; Created: 2018-06-15 14:10:12
 ;; Version: 0.5
 ;; Last-Updated: 2022-10-10 15:23:53 +0800
-;;           By: Gong Qijian
+;;           By: Andy Stewart
 ;; URL: https://github.com/manateelazycat/holo-layer
 ;; Keywords:
 ;; Compatibility: emacs-version >= 28
