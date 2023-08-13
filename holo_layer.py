@@ -28,6 +28,7 @@ from PyQt6.QtGui import QPainter, QColor, QGuiApplication, QPolygonF, QPen
 
 from epc.server import ThreadingEPCServer
 from utils import *
+from plugin.window_border import WindowBorder
 
 
 class HoloLayer:
@@ -104,6 +105,9 @@ class HoloWindow(QWidget):
         self.emacs_frame_info = None
         self.window_info = []
 
+        self.window_border = WindowBorder()
+
+        self.cursor_color = None
         self.cursor_info = []
         self.cursor_prev_info = []
         self.cursor_timer = QTimer(self)
@@ -140,17 +144,11 @@ class HoloWindow(QWidget):
             self.showFullScreen()
 
     def paintEvent(self, event):
-        if self.active_window_border_color is None:
-            (active_window_border_color,
-             inactive_window_border_color,
-             cursor_color,
-             cursor_alpha) = get_emacs_vars(["holo-layer-active-window-color",
-                                             "holo-layer-inactive-window-color",
-                                             "holo-layer-cursor-color",
+        if self.cursor_color is None:
+            (cursor_color,
+             cursor_alpha) = get_emacs_vars(["holo-layer-cursor-color",
                                              "holo-layer-cursor-alpha"])
 
-            self.active_window_border_color = QColor(active_window_border_color)
-            self.inactive_window_border_color = QColor(inactive_window_border_color)
             self.cursor_color = QColor(cursor_color)
             self.cursor_color.setAlpha(cursor_alpha)
 
@@ -180,40 +178,7 @@ class HoloWindow(QWidget):
                 painter.drawPolygon(polygon)
             painter.setBrush(background_color)
 
-        if len(self.window_info) == 1:
-            # Draw 1 pixel mode-line when only
-            window_info = self.window_info[0]
-            [x, y, w, h, _] = window_info
-            [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
-
-            painter.setPen(self.active_window_border_color)
-            painter.drawRect(x + emacs_x, y + emacs_y + h - 1, w, 1)
-        elif len(self.window_info) > 1:
-            # Draw inactive window border.
-            for info in self.window_info:
-                [x, y, w, h, is_active_window] = info
-
-                if is_active_window == "nil":
-                    painter.setPen(self.inactive_window_border_color)
-                    self.draw_window_border(painter, info)
-
-            # Draw active window border.
-            for info in self.window_info:
-                [x, y, w, h, is_active_window] = info
-
-                if is_active_window == "t":
-                    painter.setPen(self.active_window_border_color)
-                    self.draw_window_border(painter, info)
-
-    def draw_window_border(self, painter, info):
-        [x, y, w, h, is_active_window] = info
-        [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
-
-        if x + w >= emacs_x + emacs_width:
-            # Width need -1 if window is at rightest of Emacs.
-            painter.drawRect(x + emacs_x, y + emacs_y, w - 1, h)
-        else:
-            painter.drawRect(x + emacs_x, y + emacs_y, w, h)
+        self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
 
     def create_cursor_move_animation(self):
         [prev_x, prev_y, prev_w, prev_h] = self.cursor_prev_info
