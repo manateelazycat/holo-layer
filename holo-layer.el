@@ -175,6 +175,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Animation interval for cursor (10ms)."
   :type 'integer)
 
+(defcustom holo-layer-cursor-block-commands '("watch-other-window-up" "watch-other-window-down")
+  "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
+  :type 'list)
+
 (defun holo-layer--user-emacs-directory ()
   "Get lang server with project path, file path or file extension."
   (expand-file-name user-emacs-directory))
@@ -449,6 +453,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
+(defun holo-layer-cursor-is-block-command-p ()
+  (member (format "%s" this-command) holo-layer-cursor-block-commands))
+
 (defun holo-layer-get-cursor-info ()
   "Get the pixel position of the cursor in the current window."
   (interactive)
@@ -458,9 +465,12 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (let (cursor-info)
     (setq cursor-info
-          ;; Don't render cursor
+          ;; Don't render cursor match below rules:
+          ;; 1. Current buffer or previous buffer is EAF mode
+          ;; 2. Current command match `holo-layer-cursor-block-commands'
           (if (and (not (equal major-mode 'eaf-mode))
-                   (not (equal holo-layer-last-buffer-mode 'eaf-mode)))
+                   (not (equal holo-layer-last-buffer-mode 'eaf-mode))
+                   (not (holo-layer-cursor-is-block-command-p)))
               (let* ((coords (posn-x-y (posn-at-point (point))))
                      (window-allocation (holo-layer-get-window-allocation (selected-window)))
                      (x (+ (car coords) (nth 0 window-allocation)))
