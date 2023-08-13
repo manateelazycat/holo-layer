@@ -15,9 +15,20 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 (holo-layer-enable)
 ```
 
+## 演示效果
+
+### 果冻光标动画
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
+</p>
+
 ## 选项
 * holo-layer-active-window-color: 激活窗口的边框颜色， 只在超过两个窗口的时候显示
 * holo-layer-inactive-window-color: 非激活窗口的边框颜色， 只在超过两个窗口的时候显示
+* holo-layer-enable-cursor-animation: 是否开启果冻光标的动画， 默认是关闭的
+* holo-layer-cursor-color: 果冻光标的颜色， 默认和 Emacs 光标的背景色一致
+* holo-layer-cursor-alpha: 果冻光标的 Alpha 透明度， 默认是 200， 完全透明是 0， 不透明是 255 
+* holo-layer-cursor-animation-interval: 果冻光标动画的间隔时间， 默认是 10ms， 不用担心时间间隔， 因为动画效果是用 PyQt 多线程绘制的， 不影响 Emacs 性能
 
 ## 反馈问题
 

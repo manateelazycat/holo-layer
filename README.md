@@ -15,9 +15,21 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 (holo-layer-enable)
 ```
 
+## Demonstration Effect
+
+### Jelly Cursor Animation
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
+</p>
+
+
 ## Options
 * holo-layer-active-window-color: The border color of the active window, only displayed when there are more than two windows
 * holo-layer-inactive-window-color: The border color of the inactive window, only displayed when there are more than two windows
+* holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
+* holo-layer-cursor-color: The color of the jelly cursor, by default it is the same as the background color of the Emacs cursor
+* holo-layer-cursor-alpha: The Alpha transparency of the jelly cursor, the default is 200, completely transparent is 0, opaque is 255
+* holo-layer-cursor-animation-interval: The interval time of the jelly cursor animation, the default is 10ms, don't worry about the time interval, because the animation effect is drawn with PyQt multithreading, it does not affect Emacs performance
 
 ## Feedback Issues
 
