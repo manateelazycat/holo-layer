@@ -187,6 +187,14 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Hide mode-line if this option is enable."
   :type 'boolean)
 
+(defcustom holo-layer-place-info-color (face-foreground 'default)
+  "Place info color."
+  :type 'string)
+
+(defcustom holo-layer-place-info-font-size 18
+  "Place info font size."
+  :type 'integer)
+
 (defcustom holo-layer-show-place-info-p nil
   "Turn on the option to display some information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, which is disabled by default."
   :type 'boolean)

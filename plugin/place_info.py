@@ -19,8 +19,13 @@ class PlaceInfo(QObject):
         self.padding_horizontal = 20
         self.padding_vertical = 10
 
-        [self.show_info, self.search_dictionary] = get_emacs_vars([
+        [self.show_info,
+         self.text_color,
+         self.font_size,
+         self.search_dictionary] = get_emacs_vars([
             "holo-layer-show-place-info-p",
+            "holo-layer-place-info-color",
+            "holo-layer-place-info-font-size",
             "holo-layer-place-info-dictionary"])
 
         if self.show_info:
@@ -76,10 +81,10 @@ class PlaceInfo(QObject):
 
                 font = QFont()
                 font.setFamily(font_family)
-                font.setPointSize(20)
+                font.setPointSize(self.font_size)
                 painter.setFont(font)
 
-                painter.setPen(QColor(0, 255, 0))
+                painter.setPen(QColor(self.text_color))
                 painter.setBrush(QColor(0, 0, 0, 50))
 
                 [x, y, w, h] = emacs_frame_info

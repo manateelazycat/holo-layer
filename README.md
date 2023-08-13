@@ -31,6 +31,8 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 * holo-layer-cursor-alpha: The Alpha transparency of the jelly cursor, the default is 200, completely transparent is 0, opaque is 255
 * holo-layer-cursor-animation-interval: The interval time of the jelly cursor animation, the default is 10ms, don't worry about the time interval, because the animation effect is drawn with PyQt multithreading, it does not affect Emacs performance
 * holo-layer-cursor-block-commands: If you do not want to display cursor animations in certain situations, you can add the command string to this list
+* holo-layer-place-info-color: The color of the information at the cursor, the default is the foreground color of `default`
+* holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18
 * holo-layer-show-place-info-p: Displays information at the cursor in the top right corner of the screen, such as the translation of the word at the cursor, default is off
 * holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is disabled by default
 
