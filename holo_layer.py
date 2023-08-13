@@ -18,21 +18,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sys
 import platform
-import threading
 import signal
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtGui import QPainter, QGuiApplication, QColor
+import sys
+import threading
 
 from epc.server import ThreadingEPCServer
-from utils import *
-from plugin.window_border import WindowBorder
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QGuiApplication, QPainter
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
-
+from plugin.window_border import WindowBorder
+from utils import *
 
 
 class HoloLayer:

@@ -1,6 +1,8 @@
-from PyQt6.QtCore import QObject, QTimer, QPointF,  QLineF
-from PyQt6.QtGui import QColor, QPolygonF, QPen, QLinearGradient
+from PyQt6.QtCore import QLineF, QObject, QPointF, QTimer
+from PyQt6.QtGui import QColor, QLinearGradient, QPen, QPolygonF
+
 from utils import *
+
 
 class CursorAnimation(QObject):
 

@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QObject
 from PyQt6.QtGui import QColor
+
 from utils import *
 
 

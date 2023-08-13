@@ -2,7 +2,7 @@ import os
 import re
 import threading
 
-from PyQt6.QtCore import QObject, QRect, QRectF, Qt
+from PyQt6.QtCore import QObject, QRectF, Qt
 from PyQt6.QtGui import QColor, QFont, QFontDatabase, QFontMetrics, QPainterPath
 
 from plugin.pystardict import Dictionary
@@ -27,6 +27,13 @@ class PlaceInfo(QObject):
             "holo-layer-place-info-color",
             "holo-layer-place-info-font-size",
             "holo-layer-place-info-dictionary"])
+
+        self.font_family = QFontDatabase.systemFont(
+            QFontDatabase.SystemFont.FixedFont
+        ).family()
+        self.font = QFont()
+        self.font.setFamily(self.font_family)
+        self.font.setPointSize(self.font_size)
 
         if self.show_info:
             self.build_words_thread = threading.Thread(target=self.build_words)
@@ -56,11 +63,11 @@ class PlaceInfo(QObject):
         # Sort by word type.
         text = re.sub(r';(\w+\.)', r'\n\1', translation)
 
-        # Filter empty translation.
-        text_lines = list(filter(lambda t: t != "", text.split("\n")))
-
         # Filter long translation.
-        text_lines = list(map(lambda line: self.short_translation_line(line), text_lines))
+        text_lines = list(map(lambda line: self.short_translation_line(line), text.split("\n")))
+
+        # Filter empty translation.
+        text_lines = list(filter(lambda t: t != "", text_lines))
 
         # Join to multi-line content.
         text_content = "\n".join(text_lines)
@@ -68,6 +75,7 @@ class PlaceInfo(QObject):
         return (text_content, text_lines, len(text_lines))
 
     def short_translation_line(self, line):
+        # We need remove some long translation avoid translation interfere with code content.
         words = line.split(";")
         short_words = list(filter(lambda w: len(w) < 15, words))
         return ";".join(short_words)
@@ -75,31 +83,33 @@ class PlaceInfo(QObject):
     def draw(self, painter, window_info, emacs_frame_info, word):
         if self.show_info and len(window_info) > 0:
             if word in self.words:
-                font_family = QFontDatabase.systemFont(
-                    QFontDatabase.SystemFont.FixedFont
-                ).family()
+                # Set font.
+                painter.setFont(self.font)
 
-                font = QFont()
-                font.setFamily(font_family)
-                font.setPointSize(self.font_size)
-                painter.setFont(font)
-
+                # Set text and fill color.
                 painter.setPen(QColor(self.text_color))
                 painter.setBrush(QColor(0, 0, 0, 50))
 
+                # Init rectangle vars.
                 [x, y, w, h] = emacs_frame_info
                 first_window_y = y + h
 
+                # Calculate y coordinate of toppest window.
                 for info in window_info:
                     if info[1] < first_window_y:
                         first_window_y = info[1]
 
-                metrics = QFontMetrics(painter.font())
+                # Get multi-line translation.
                 (text_content, text_lines, text_line_number) = self.format_translation(self.words[word])
 
+                print("****** ", text_content)
+
+                # Calculate translation width and height.
+                metrics = QFontMetrics(painter.font())
                 text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
                 text_height = metrics.height() * text_line_number
 
+                # Calculate render rectangle.
                 text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
                                                  first_window_y + self.margin + self.padding_vertical,
                                                  text_width,
@@ -112,9 +122,11 @@ class PlaceInfo(QObject):
                                          text_width + self.padding_horizontal * 2,
                                          text_height + self.padding_vertical * 2)
 
+                # Draw round rectangle.
                 path = QPainterPath()
                 roundness = 5
                 path.addRoundedRect(background_rect, roundness, roundness)
                 painter.fillPath(path, painter.brush())
 
+                # Draw translation.
                 painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
