@@ -230,24 +230,31 @@ class HoloWindow(QWidget):
         self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
 
     def cursor_animation_draw(self):
-        p = self.cursor_animation_percent # animation percent
-        cs = self.cursor_start # start point
-        ce = self.cursor_end # end point
+        p = self.cursor_animation_percent
+        cs = self.cursor_start
+        ce = self.cursor_end
         [w, h] = self.cursor_wh
-        if (cs - ce).x() * (cs - ce).y() > 0:
-            points = [cs, cs + QPointF(w, h), ce + QPointF(w, h), ce]
-        elif (cs - ce).x() * (cs - ce).y() < 0 :
-            points = [cs + QPointF(0, h), cs + QPointF(w, 0), ce + QPointF(w, 0), ce + QPointF(0, h)]
-        # cursor down and up
-        elif (cs - ce).x() == 0 and (cs - ce).y() >= 0:
-            points = [cs + QPointF(0, h), cs + QPointF(w, h), ce + QPointF(w, 0), ce]
-        elif (cs - ce).x() == 0 and (cs - ce).y() < 0:
-            points = [cs, cs + QPointF(w, 0), ce + QPointF(w, h), ce + QPointF(0, h)]
-        # cursor left and right
-        elif (cs - ce).y() == 0 and (cs - ce).x() >= 0:
-            points = [cs + QPointF(w, 0), cs + QPointF(w, h), ce + QPointF(0, h), ce]
-        elif (cs - ce).y() == 0 and (cs - ce).x() < 0:
-            points = [cs, cs + QPointF(0, h), ce + QPointF(w, h), ce + QPointF(w, 0)]
+        diff = cs - ce
+        diff_x = diff.x()
+        diff_y = diff.y()
+        w_point = QPointF(w, 0)
+        h_point = QPointF(0, h)
+        wh_point = QPointF(w, h)
+
+        if diff_x * diff_y > 0:
+            points = [cs, cs + wh_point, ce + wh_point, ce]
+        elif diff_x * diff_y < 0:
+            points = [cs + h_point, cs + w_point, ce + w_point, ce + h_point]
+        elif diff_x == 0:
+            if diff_y >= 0:
+                points = [cs + h_point, cs + wh_point, ce + w_point, ce]
+            else:
+                points = [cs, cs + w_point, ce + wh_point, ce + h_point]
+        elif diff_y == 0:
+            if diff_x >= 0:
+                points = [cs + w_point, cs + wh_point, ce + h_point, ce]
+            else:
+                points = [cs, cs + h_point, ce + wh_point, ce + w_point]
 
         if p < 0.5:
             points[2] = points[2] * p * 2 + points[1] * (1 - p * 2)
