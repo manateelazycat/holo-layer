@@ -211,6 +211,14 @@ Example, if you have dictionary `/usr/share/stardict/dic/stardict-oxford-gb-form
 you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated', not include `.ifo' extension."
   :type 'string)
 
+(defcustom holo-layer-window-number-color "#cc2444"
+  "Color for window number."
+  :type 'string)
+
+(defcustom holo-layer-window-number-font-size 40
+  "Font size for window number."
+  :type 'integer)
+
 (defcustom holo-layer-cursor-block-commands '("watch-other-window-up" "watch-other-window-down")
   "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
   :type 'list)
@@ -585,6 +593,17 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   ;; hide holo layer
   (holo-layer-call-async "update_window_info" (holo-layer-get-emacs-frame-info) ""))
+
+(defun holo-layer-jump-to-window ()
+  (interactive)
+  (let ((windows (cl-remove-if #'window-dedicated-p (window-list))))
+    (if (> (length windows) 1)
+        (progn
+          (holo-layer-call-async "show_window_number")
+          (ignore-errors
+            (select-window (nth (- (read-number "Jump to window number: ") 1) windows)))
+          (holo-layer-call-async "hide_window_number"))
+      (message "Only one window, don't need switch."))))
 
 (unless holo-layer-is-starting
   (holo-layer-start-process))

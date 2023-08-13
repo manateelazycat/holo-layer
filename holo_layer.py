@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import QApplication, QWidget
 from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
 from plugin.window_border import WindowBorder
+from plugin.window_number import WindowNumber
 from utils import *
 
 
@@ -97,6 +98,14 @@ class HoloLayer:
     def update_place_info(self, word):
         self.holo_window.update_place_info(word)
 
+    @PostGui()
+    def show_window_number(self):
+        self.holo_window.show_window_number()
+
+    @PostGui()
+    def hide_window_number(self):
+        self.holo_window.hide_window_number()
+
     def cleanup(self):
         """Do some cleanup before exit python process."""
         close_epc_client()
@@ -113,8 +122,11 @@ class HoloWindow(QWidget):
         self.place_word = ""
 
         self.window_border = WindowBorder()
+        self.window_number = WindowNumber()
         self.cursor_animation = CursorAnimation(self)
         self.place_info = PlaceInfo()
+
+        self.show_window_number_flag = False
 
         self.setStyleSheet("border: none;")
         self.setContentsMargins(0, 0, 0, 0)
@@ -157,6 +169,9 @@ class HoloWindow(QWidget):
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
 
+        if self.show_window_number_flag:
+            self.window_number.draw(painter, self.window_info)
+
     def update_place_info(self, word):
         word = word.lower()
 
@@ -178,6 +193,15 @@ class HoloWindow(QWidget):
         if not self.cursor_animation.update_info(cursor_info, self.emacs_frame_info):
             # skip update if cursor position is changed.
             self.update()
+
+    def show_window_number(self):
+        if len(self.window_info) > 1:
+            self.show_window_number_flag = True
+            self.update()
+
+    def hide_window_number(self):
+        self.show_window_number_flag = False
+        self.update()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

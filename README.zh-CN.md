@@ -36,6 +36,8 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 * holo-layer-place-info-background-color: 光标处信息的背景颜色， 默认用的`default`的背景色
 * holo-layer-place-info-font-size: 光标处信息的字体大小， 默认是 18
 * holo-layer-show-place-info-p: 在屏幕右上角显示光标处信息， 比如光标处单词的翻译， 默认关闭
+* holo-layer-window-number-color: 窗口跳转数字的颜色, 用 `holo-layer-jump-to-window` 命令跳转窗口
+* holo-layer-window-number-font-size: 窗口跳转数字的字体大小， 默认是 40
 * holo-layer-hide-mode-line: 打开这个选项隐藏 mode-line， 默认是关闭的
 
 ## 反馈问题

@@ -37,6 +37,8 @@ Note: If you are using Conda or other virtual environments, please first set `ho
 * holo-layer-place-info-background-color: Background color of the information at the cursor, the default is the background color of `default`
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18
 * holo-layer-show-place-info-p: Displays information at the cursor in the top right corner of the screen, such as the translation of the word at the cursor, default is off
+* holo-layer-window-number-color: The color of the window jump number, used to jump windows with the `holo-layer-jump-to-window` command
+* holo-layer-window-number-font-size: The font size of the window jump number, the default is 40
 * holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is disabled by default
 
 ## Feedback Issues
