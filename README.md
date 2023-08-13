@@ -15,7 +15,7 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 (holo-layer-enable)
 ```
 
-## Demonstration Effect
+## Demo
 
 ### Jelly Cursor Animation
 <p align="center">
