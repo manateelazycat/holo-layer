@@ -179,6 +179,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Animation interval for cursor (10ms)."
   :type 'integer)
 
+(defcustom holo-layer-hide-mode-line nil
+  "Hide mode-line if this option is enable."
+  :type 'boolean)
+
 (defcustom holo-layer-cursor-block-commands '("watch-other-window-up" "watch-other-window-down")
   "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
   :type 'list)
@@ -520,7 +524,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
-  (setq-default mode-line-format nil))
+  (if holo-layer-hide-mode-line
+      (setq-default mode-line-format nil)))
 
 (defun holo-layer-disable ()
   (remove-hook 'post-command-hook #'holo-layer-start-process)
