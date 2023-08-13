@@ -594,9 +594,17 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   ;; hide holo layer
   (holo-layer-call-async "update_window_info" (holo-layer-get-emacs-frame-info) ""))
 
+(defun holo-layer-compare-windows (w1 w2)
+  "Compare the positions of two windows. The upper bounds are compared first, and then the left bounds are compared if the upper bounds are the same."
+  (let ((edges1 (window-edges w1))
+        (edges2 (window-edges w2)))
+    (if (= (nth 1 edges1) (nth 1 edges2))
+        (< (nth 0 edges1) (nth 0 edges2))
+      (< (nth 1 edges1) (nth 1 edges2)))))
+
 (defun holo-layer-jump-to-window ()
   (interactive)
-  (let ((windows (cl-remove-if #'window-dedicated-p (window-list))))
+  (let ((windows (sort (cl-remove-if #'window-dedicated-p (window-list)) 'holo-layer-compare-windows)))
     (if (> (length windows) 1)
         (progn
           (holo-layer-call-async "show_window_number")
