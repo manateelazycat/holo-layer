@@ -183,6 +183,14 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Hide mode-line if this option is enable."
   :type 'boolean)
 
+(defcustom holo-layer-place-info-dictionary "kdic-ec-11w"
+  "SDCV dictionary for word completion.
+Default is `kdic-ec-11w', you can replace it with StarDict dictionary path
+
+Example, if you have dictionary `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated.ifo',
+you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated', not include `.ifo' extension."
+  :type 'string)
+
 (defcustom holo-layer-cursor-block-commands '("watch-other-window-up" "watch-other-window-down")
   "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
   :type 'list)
@@ -410,13 +418,13 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defvar holo-layer-last-buffer-mode nil)
 
 (defun holo-layer-monitor-cursor-change ()
-    (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
-                (changed (and cursor-info
-                              (not (equal cursor-info holo-layer-last-cursor-info)))))
-      (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
-          (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
-        (holo-layer-monitor-configuration-change))
-      (setq holo-layer-last-cursor-info cursor-info)))
+  (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
+              (changed (and cursor-info
+                            (not (equal cursor-info holo-layer-last-cursor-info)))))
+    (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
+        (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
+      (holo-layer-monitor-configuration-change))
+    (setq holo-layer-last-cursor-info cursor-info)))
 
 (defun holo-layer-monitor-configuration-change (&rest _)
   "EAF function to respond when detecting a window configuration change."
@@ -511,11 +519,20 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (- h window-divider-bottom-padding)
               (equal window current-window)))))
 
+(defun holo-layer-show-place-info ()
+  (let ((word (if mark-active
+                  (buffer-substring-no-properties (region-beginning) (region-end))
+                (thing-at-point 'word t))))
+    (when word
+      (holo-layer-call-async "update_place_info" word))))
+
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
 
   (when holo-layer-enable-cursor-animation
     (add-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
+
+  (add-hook 'post-command-hook #'holo-layer-show-place-info)
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
@@ -532,6 +549,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (when holo-layer-enable-cursor-animation
     (remove-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
+
+  (remove-hook 'post-command-hook #'holo-layer-show-place-info)
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
