@@ -159,6 +159,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable cursor animation."
   :type 'boolean)
 
+(defcustom holo-layer-cursor-animation-color-gradient t
+  "Enable cursor color gradient."
+  :type 'boolean)
+
 (defcustom holo-layer-cursor-animation-type "jelly"
   "Cursor animation type can be (jelly, arrow)"
   :type 'boolean)
@@ -397,7 +401,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
           height)))
 
 (defun holo-layer-eaf-fullscreen-p ()
-  (and (require 'eaf nil t)
+  (and (featurep 'eaf)
        eaf-fullscreen-p
        (equal (length (cl-remove-if #'window-dedicated-p (window-list frame))) 1)))
 
@@ -457,7 +461,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                           (equal current-window current-window))
                   view-infos)
             (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
-            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
+            ;; skip update cursor
+            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -466,7 +471,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                          (holo-layer-is-normal-window-p window))
                 (push (holo-layer-get-window-info frame window current-window) view-infos))))
           (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
-          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
+          ;; skip update cursor
+          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
