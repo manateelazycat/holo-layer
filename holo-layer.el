@@ -395,6 +395,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defvar holo-layer-cache-emacs-frame-info nil)
 (defvar holo-layer-cache-window-info nil)
 (defvar holo-layer-last-point nil)
+(defvar holo-layer-last-buffer-mode nil)
 
 (defun holo-layer-monitor-cursor-change ()
   (when (not (equal holo-layer-last-point (point)))
@@ -435,7 +436,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                           (equal current-window current-window))
                   view-infos)
             (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
-            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info  (holo-layer-get-cursor-info))))
+            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -455,13 +456,23 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     ;; make cursor visble
     (redisplay))
 
-  (let* ((coords (posn-x-y (posn-at-point (point))))
-         (window-allocation (holo-layer-get-window-allocation (selected-window)))
-         (x (+ (car coords) (nth 0 window-allocation)))
-         (y (+ (cdr coords) (nth 1 window-allocation)))
-         (w (frame-char-width nil))
-         (h (frame-char-height nil)))
-    (format "%s:%s:%s:%s" x y w h)))
+  (let (cursor-info)
+    (setq cursor-info
+          ;; Don't render cursor
+          (if (and (not (equal major-mode 'eaf-mode))
+                   (not (equal holo-layer-last-buffer-mode 'eaf-mode)))
+              (let* ((coords (posn-x-y (posn-at-point (point))))
+                     (window-allocation (holo-layer-get-window-allocation (selected-window)))
+                     (x (+ (car coords) (nth 0 window-allocation)))
+                     (y (+ (cdr coords) (nth 1 window-allocation)))
+                     (w (frame-char-width nil))
+                     (h (frame-char-height nil)))
+                (format "%s:%s:%s:%s" x y w h))
+            ""))
+
+    (setq holo-layer-last-buffer-mode major-mode)
+
+    cursor-info))
 
 (defun holo-layer-get-window-info (frame window current-window)
   (with-current-buffer (window-buffer window)

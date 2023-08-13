@@ -259,7 +259,11 @@ class HoloWindow(QWidget):
         return QPolygonF(points)
 
     def update_cursor_info(self, cursor_info):
-        if len(cursor_info) == 0: return
+        # Don't update cursor info if cursor_info unpack failed.
+        try:
+            [x, y, w, h] = cursor_info
+        except:
+            return
 
         [x, y, w, h] = cursor_info
         if len(self.emacs_frame_info) > 1:
