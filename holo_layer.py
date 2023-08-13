@@ -22,9 +22,9 @@ import sys
 import platform
 import threading
 import signal
-from PyQt6.QtCore import Qt, QPointF, QTimer
+from PyQt6.QtCore import Qt, QPointF, QTimer, QLineF
 from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtGui import QPainter, QColor, QGuiApplication, QPolygonF
+from PyQt6.QtGui import QPainter, QColor, QGuiApplication, QPolygonF, QPen
 
 from epc.server import ThreadingEPCServer
 from utils import *
@@ -65,6 +65,9 @@ class HoloLayer:
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
 
     def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args):
+        cursor_info_args = cursor_info_args if len(cursor_info_args) else ""
+        window_info_args = window_info_args if len(window_info_args) else ""
+
         if window_info_args != self.window_info_args:
             self.window_info_args = window_info_args
             self.cursor_info_args = cursor_info_args
@@ -109,8 +112,10 @@ class HoloWindow(QWidget):
 
         (self.cursor_animation_duration,
          self.cursor_animation_interval,
+         self.cursor_animation_type,
          self.enable_cursor_animation) = get_emacs_vars(["holo-layer-cursor-animation-duration",
                                                          "holo-layer-cursor-animation-interval",
+                                                         "holo-layer-cursor-animation-type",
                                                          "holo-layer-enable-cursor-animation"])
 
         self.setStyleSheet("border: none;")
@@ -160,10 +165,18 @@ class HoloWindow(QWidget):
 
         if self.cursor_animation_percent < 1 and self.enable_cursor_animation:
             # cursor animation
-            painter.setBrush(self.cursor_color)
-            painter.setPen(self.cursor_color)
-            polygon = self.cursor_animation_draw()
-            painter.drawPolygon(polygon)
+            if self.cursor_animation_type == "arrow":
+                painter.setPen(QPen(self.cursor_color.lighter(110), 3))
+                arrow, line = self.cursor_animation_draw()
+                painter.drawLines(line)
+                painter.setPen(self.cursor_color)
+                painter.setBrush(self.cursor_color)
+                painter.drawPolygon(arrow)
+            else:
+                painter.setBrush(self.cursor_color)
+                painter.setPen(self.cursor_color)
+                polygon = self.cursor_animation_draw()
+                painter.drawPolygon(polygon)
             painter.setBrush(background_color)
 
         if len(self.window_info) == 1:
@@ -229,11 +242,7 @@ class HoloWindow(QWidget):
 
         self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
 
-    def cursor_animation_draw(self):
-        p = self.cursor_animation_percent
-        cs = self.cursor_start
-        ce = self.cursor_end
-        [w, h] = self.cursor_wh
+    def cursor_animation_draw_jelly_cursor(self, cs, ce, w, h, p):
         diff = cs - ce
         diff_x = diff.x()
         diff_y = diff.y()
@@ -241,6 +250,7 @@ class HoloWindow(QWidget):
         h_point = QPointF(0, h)
         wh_point = QPointF(w, h)
 
+        points = []
         if diff_x * diff_y > 0:
             points = [cs, cs + wh_point, ce + wh_point, ce]
         elif diff_x * diff_y < 0:
@@ -264,6 +274,33 @@ class HoloWindow(QWidget):
             points[1] = points[2] * (p - 0.5) * 2 + points[1] * (1 - (p - 0.5) * 2)
 
         return QPolygonF(points)
+
+    def cursor_animation_draw_arrow_cursor(self, cs, ce, w, h, p):
+        arrow_size = 10.0
+
+        ce = ce + QPointF(w/2, h/2)
+        cs = cs + QPointF(w/2, h/2)
+
+        p = 1 # disable animation
+        pe = cs * (1 - p) + ce * p
+        direction = pe - cs
+        direction /= direction.manhattanLength()
+        p1 = pe - arrow_size * direction
+        direction = QPointF(-direction.y(), direction.x())
+        p2 = p1 + arrow_size * 0.5 * direction
+        p3 = p1 - arrow_size * 0.5 * direction
+
+        return QPolygonF([pe, p2, p3]), QLineF(cs, (p2 + p3)/2)
+
+    def cursor_animation_draw(self):
+        p = self.cursor_animation_percent
+        cs = self.cursor_start
+        ce = self.cursor_end
+        [w, h] = self.cursor_wh
+        if self.cursor_animation_type == "arrow":
+            return self.cursor_animation_draw_arrow_cursor(cs, ce, w, h, p)
+        else:
+            return self.cursor_animation_draw_jelly_cursor(cs, ce, w, h, p)
 
     def update_cursor_info(self, cursor_info):
         # Don't update cursor info if cursor_info unpack failed.

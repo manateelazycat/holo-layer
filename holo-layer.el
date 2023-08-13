@@ -159,6 +159,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable cursor animation."
   :type 'boolean)
 
+(defcustom holo-layer-cursor-animation-type "jelly"
+  "Cursor animation type can be (jelly, arrow)"
+  :type 'boolean)
+
 (defcustom holo-layer-cursor-color (face-background 'cursor)
   "Cursor color."
   :type 'string)
@@ -398,16 +402,17 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defvar holo-layer-cache-emacs-frame-info nil)
 (defvar holo-layer-cache-window-info nil)
-(defvar holo-layer-last-point nil)
+(defvar holo-layer-last-cursor-info nil)
 (defvar holo-layer-last-buffer-mode nil)
 
 (defun holo-layer-monitor-cursor-change ()
-  (when (not (equal holo-layer-last-point (point)))
-    (setq holo-layer-last-point (point))
-    (ignore-errors
+    (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
+                (changed (and cursor-info
+                              (not (equal cursor-info holo-layer-last-cursor-info)))))
       (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
-          (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))
-        (holo-layer-monitor-configuration-change)))))
+          (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
+        (holo-layer-monitor-configuration-change))
+      (setq holo-layer-last-cursor-info cursor-info)))
 
 (defun holo-layer-monitor-configuration-change (&rest _)
   "EAF function to respond when detecting a window configuration change."
@@ -459,31 +464,28 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-get-cursor-info ()
   "Get the pixel position of the cursor in the current window."
   (interactive)
-  (unless (window-absolute-pixel-position)
-    ;; make cursor visble
-    (redisplay))
-
-  (let (cursor-info)
-    (setq cursor-info
-          ;; Don't render cursor match below rules:
-          ;; 1. Current buffer or previous buffer is EAF mode
-          ;; 2. Current command match `holo-layer-cursor-block-commands'
-          (if (and (not (equal major-mode 'eaf-mode))
-                   (not (equal holo-layer-last-buffer-mode 'eaf-mode))
-                   (not (holo-layer-cursor-is-block-command-p)))
-              (let* ((coords (posn-x-y (posn-at-point (point))))
-                     (window-allocation (holo-layer-get-window-allocation (selected-window)))
-                     (window-margin (* (or (car (window-margins)) 0) (frame-char-width)))
-                     (x (+ (car coords) (nth 0 window-allocation) window-margin))
-                     (y (+ (cdr coords) (nth 1 window-allocation)))
-                     (w (frame-char-width nil))
-                     (h (frame-char-height nil)))
-                (format "%s:%s:%s:%s" x y w h))
-            ""))
+  (when-let* ((p (point)) (window (selected-window))
+              (cursor-pos
+               (or  (pos-visible-in-window-p p window t)
+                    ;; make cursor visble
+                    (and (redisplay)
+                         (pos-visible-in-window-p p window t))))
+              (window-allocation (holo-layer-get-window-allocation window))
+              (window-margin (* (or (car (window-margins)) 0) (frame-char-width)))
+              ;; Don't render cursor match below rules:
+              ;; 1. Current buffer or previous buffer is EAF mode
+              ;; 2. Current command match `holo-layer-cursor-block-commands'
+              (ok-rendeor-cursor
+               (and (not (equal major-mode 'eaf-mode))
+                    (not (equal holo-layer-last-buffer-mode 'eaf-mode))
+                    (not (holo-layer-cursor-is-block-command-p)))))
 
     (setq holo-layer-last-buffer-mode major-mode)
-
-    cursor-info))
+    (let* ((x (+ (nth 0 cursor-pos) (nth 0 window-allocation) window-margin))
+           (y (+ (nth 1 cursor-pos) (nth 1 window-allocation)))
+           (w (frame-char-width nil))
+           (h (frame-char-height nil)))
+      (format "%s:%s:%s:%s" x y w h))))
 
 (defun holo-layer-get-window-info (frame window current-window)
   (with-current-buffer (window-buffer window)
