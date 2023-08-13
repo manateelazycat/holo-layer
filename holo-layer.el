@@ -187,6 +187,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Hide mode-line if this option is enable."
   :type 'boolean)
 
+(defcustom holo-layer-show-place-info-p nil
+  "Turn on the option to display some information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, which is disabled by default."
+  :type 'boolean)
+
 (defcustom holo-layer-place-info-dictionary "kdic-ec-11w"
   "SDCV dictionary for word completion.
 Default is `kdic-ec-11w', you can replace it with StarDict dictionary path
@@ -526,9 +530,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (equal window current-window)))))
 
 (defun holo-layer-show-place-info ()
-  (let ((word (if mark-active
-                  (buffer-substring-no-properties (region-beginning) (region-end))
-                (thing-at-point 'word t))))
+  (let ((word (if (derived-mode-p 'eaf-mode)
+                  ""
+                (if mark-active
+                    (buffer-substring-no-properties (region-beginning) (region-end))
+                  (thing-at-point 'word t)))))
     (when word
       (holo-layer-call-async "update_place_info" word))))
 
@@ -539,6 +545,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (add-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
+  (add-hook 'buffer-list-update-hook #'holo-layer-show-place-info)
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
@@ -557,6 +564,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (remove-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
+  (remove-hook 'buffer-list-update-hook #'holo-layer-show-place-info)
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)

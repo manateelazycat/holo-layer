@@ -19,10 +19,13 @@ class PlaceInfo(QObject):
         self.padding_horizontal = 20
         self.padding_vertical = 10
 
-        [self.search_dictionary] = get_emacs_vars(["holo-layer-place-info-dictionary"])
+        [self.show_info, self.search_dictionary] = get_emacs_vars([
+            "holo-layer-show-place-info-p",
+            "holo-layer-place-info-dictionary"])
 
-        self.build_words_thread = threading.Thread(target=self.build_words)
-        self.build_words_thread.start()
+        if self.show_info:
+            self.build_words_thread = threading.Thread(target=self.build_words)
+            self.build_words_thread.start()
 
     def build_words(self):
         if self.search_dictionary == "kdic-ec-11w":
@@ -45,7 +48,7 @@ class PlaceInfo(QObject):
             message_emacs("StarDic dictionary {}.ifo is not exists".format(dictionary_path))
 
     def draw(self, painter, window_info, emacs_frame_info, word):
-        if len(window_info) > 0:
+        if self.show_info and len(window_info) > 0:
             if word in self.words:
                 font_family = QFontDatabase.systemFont(
                     QFontDatabase.SystemFont.FixedFont
