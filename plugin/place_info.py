@@ -2,8 +2,8 @@ import os
 import re
 import threading
 
-from PyQt6.QtCore import QObject, QRect, Qt
-from PyQt6.QtGui import QColor, QFont, QFontMetrics
+from PyQt6.QtCore import QObject, QRect, QRectF, Qt
+from PyQt6.QtGui import QColor, QFont, QFontDatabase, QFontMetrics, QPainterPath
 
 from plugin.pystardict import Dictionary
 from utils import *
@@ -16,7 +16,8 @@ class PlaceInfo(QObject):
 
         self.words = {}
         self.margin = 20
-        self.padding = 10
+        self.padding_horizontal = 20
+        self.padding_vertical = 10
 
         [self.search_dictionary] = get_emacs_vars(["holo-layer-place-info-dictionary"])
 
@@ -46,7 +47,12 @@ class PlaceInfo(QObject):
     def draw(self, painter, window_info, emacs_frame_info, word):
         if len(window_info) > 0:
             if word in self.words:
+                font_family = QFontDatabase.systemFont(
+                    QFontDatabase.SystemFont.FixedFont
+                ).family()
+
                 font = QFont()
+                font.setFamily(font_family)
                 font.setPointSize(20)
                 painter.setFont(font)
 
@@ -65,17 +71,19 @@ class PlaceInfo(QObject):
                 text_width = metrics.horizontalAdvance(text)
                 text_height = metrics.height()
 
-                background_rect = QRect(x + w - text_width - self.margin - self.padding * 2,
-                                        first_window_y + self.margin,
-                                        text_width + self.padding * 2,
-                                        text_height)
-                painter.fillRect(background_rect, painter.brush())
+                background_rect = QRectF(x + w - text_width - self.margin - self.padding_horizontal * 2,
+                                         first_window_y + self.margin,
+                                         text_width + self.padding_horizontal * 2,
+                                         text_height + self.padding_vertical * 2)
+                path = QPainterPath()
+                roundness = 5
+                path.addRoundedRect(background_rect, roundness, roundness)
+                painter.fillPath(path, painter.brush())
 
-                text_rect = QRect(x + w - text_width - self.margin - self.padding,
-                                  first_window_y + self.margin,
+                text_rect = QRect(x + w - text_width - self.margin - self.padding_horizontal,
+                                  first_window_y + self.margin + self.padding_vertical,
                                   text_width,
                                   text_height)
                 painter.drawText(text_rect,
                                  Qt.AlignmentFlag.AlignRight,
                                  re.sub(r';(\w+\.)', r'\n\1', self.words[word]))
-
