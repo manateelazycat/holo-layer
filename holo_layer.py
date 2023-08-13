@@ -65,6 +65,9 @@ class HoloLayer:
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
 
     def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args):
+        cursor_info_args = cursor_info_args if len(cursor_info_args) else ""
+        window_info_args = window_info_args if len(window_info_args) else ""
+
         if window_info_args != self.window_info_args:
             self.window_info_args = window_info_args
             self.cursor_info_args = cursor_info_args
