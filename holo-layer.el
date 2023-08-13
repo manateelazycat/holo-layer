@@ -389,7 +389,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
           height)))
 
 (defun holo-layer-eaf-fullscreen-p ()
-  (and (require 'eaf nil t)
+  (and (featurep 'eaf)
        eaf-fullscreen-p
        (equal (length (cl-remove-if #'window-dedicated-p (window-list frame))) 1)))
 
@@ -410,13 +410,13 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defvar holo-layer-last-buffer-mode nil)
 
 (defun holo-layer-monitor-cursor-change ()
-    (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
-                (changed (and cursor-info
-                              (not (equal cursor-info holo-layer-last-cursor-info)))))
-      (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
-          (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
-        (holo-layer-monitor-configuration-change))
-      (setq holo-layer-last-cursor-info cursor-info)))
+  (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
+              (changed (and cursor-info
+                            (not (equal cursor-info holo-layer-last-cursor-info)))))
+    (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
+        (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
+      (holo-layer-monitor-configuration-change))
+    (setq holo-layer-last-cursor-info cursor-info)))
 
 (defun holo-layer-monitor-configuration-change (&rest _)
   "EAF function to respond when detecting a window configuration change."
@@ -449,7 +449,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                           (equal current-window current-window))
                   view-infos)
             (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
-            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
+            ;; skip update cursor
+            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -458,7 +459,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                          (holo-layer-is-normal-window-p window))
                 (push (holo-layer-get-window-info frame window current-window) view-infos))))
           (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
-          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info (holo-layer-get-cursor-info))))
+          ;; skip update cursor
+          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
