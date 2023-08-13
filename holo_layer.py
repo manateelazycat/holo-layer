@@ -29,7 +29,10 @@ from PyQt6.QtGui import QPainter, QGuiApplication, QColor
 from epc.server import ThreadingEPCServer
 from utils import *
 from plugin.window_border import WindowBorder
+
 from plugin.cursor_animation import CursorAnimation
+from plugin.place_info import PlaceInfo
+
 
 
 class HoloLayer:
@@ -92,6 +95,9 @@ class HoloLayer:
     def update(self):
         self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info)
 
+    def update_place_info(self, word):
+        self.holo_window.update_place_info(word)
+
     def cleanup(self):
         """Do some cleanup before exit python process."""
         close_epc_client()
@@ -105,9 +111,11 @@ class HoloWindow(QWidget):
 
         self.emacs_frame_info = None
         self.window_info = []
+        self.place_word = ""
 
         self.window_border = WindowBorder()
         self.cursor_animation = CursorAnimation(self)
+        self.place_info = PlaceInfo()
 
         self.setStyleSheet("border: none;")
         self.setContentsMargins(0, 0, 0, 0)
@@ -141,12 +149,19 @@ class HoloWindow(QWidget):
         else:
             painter.drawRect(self.rect())
 
-        self.cursor_animation.draw(painter)
 
+        self.cursor_animation.draw(painter)
         painter.setBrush(background_color)
         painter.setPen(background_color)
 
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
+
+    def update_place_info(self, word):
+        word = word.lower()
+
+        if self.place_word != word:
+            self.place_word = word
+            self.update()
 
     def update_info(self, emacs_frame_info, window_info, cursor_info):
         self.emacs_frame_info = emacs_frame_info.copy()
