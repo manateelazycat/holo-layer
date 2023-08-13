@@ -100,19 +100,21 @@ class PlaceInfo(QObject):
                 text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
                 text_height = metrics.height() * text_line_number
 
+                text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
+                                                 first_window_y + self.margin + self.padding_vertical,
+                                                 text_width,
+                                                 9999,  # some large height to accommodate the content
+                                                 Qt.AlignmentFlag.AlignRight,
+                                                 text_content)
+
                 background_rect = QRectF(x + w - text_width - self.margin - self.padding_horizontal * 2,
                                          first_window_y + self.margin,
                                          text_width + self.padding_horizontal * 2,
                                          text_height + self.padding_vertical * 2)
+
                 path = QPainterPath()
                 roundness = 5
                 path.addRoundedRect(background_rect, roundness, roundness)
                 painter.fillPath(path, painter.brush())
 
-                text_rect = QRect(x + w - text_width - self.margin - self.padding_horizontal,
-                                  first_window_y + self.margin + self.padding_vertical,
-                                  text_width,
-                                  text_height)
-                painter.drawText(text_rect,
-                                 Qt.AlignmentFlag.AlignRight,
-                                 re.sub(r';(\w+\.)', r'\n\1', text_content))
+                painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
