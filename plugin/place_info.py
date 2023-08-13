@@ -21,10 +21,12 @@ class PlaceInfo(QObject):
 
         [self.show_info,
          self.text_color,
+         self.background_color,
          self.font_size,
          self.search_dictionary] = get_emacs_vars([
             "holo-layer-show-place-info-p",
-            "holo-layer-place-info-color",
+            "holo-layer-place-info-text-color",
+            "holo-layer-place-info-background-color",
             "holo-layer-place-info-font-size",
             "holo-layer-place-info-dictionary"])
 
@@ -34,6 +36,10 @@ class PlaceInfo(QObject):
         self.font = QFont()
         self.font.setFamily(self.font_family)
         self.font.setPointSize(self.font_size)
+
+        self.text_color = QColor(self.text_color)
+        self.background_color = QColor(QColor(self.background_color).darker().name())
+        self.background_color.setAlpha(220)
 
         if self.show_info:
             self.build_words_thread = threading.Thread(target=self.build_words)
@@ -111,8 +117,8 @@ class PlaceInfo(QObject):
                     painter.setFont(self.font)
 
                     # Set text and fill color.
-                    painter.setPen(QColor(self.text_color))
-                    painter.setBrush(QColor(0, 0, 0, 50))
+                    painter.setPen(self.text_color)
+                    painter.setBrush(self.background_color)
 
                     # Calculate translation width and height.
                     metrics = QFontMetrics(painter.font())

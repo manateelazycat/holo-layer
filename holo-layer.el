@@ -187,7 +187,11 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Hide mode-line if this option is enable."
   :type 'boolean)
 
-(defcustom holo-layer-place-info-color (face-foreground 'default)
+(defcustom holo-layer-place-info-text-color (face-foreground 'default)
+  "Place info color."
+  :type 'string)
+
+(defcustom holo-layer-place-info-background-color (face-background 'default)
   "Place info color."
   :type 'string)
 
