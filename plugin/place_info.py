@@ -80,16 +80,20 @@ class PlaceInfo(QObject):
         short_words = list(filter(lambda w: len(w) < 15, words))
         return ";".join(short_words)
 
+    def singular_word(self, word):
+        try:
+            import inflect
+
+            engine = inflect.engine()
+            return engine.singular_noun(word)
+        except:
+            return word
+
     def draw(self, painter, window_info, emacs_frame_info, word):
         if self.show_info and len(window_info) > 0:
-            if word in self.words:
-                # Set font.
-                painter.setFont(self.font)
+            search_word = word if word in self.words else self.singular_word(word)
 
-                # Set text and fill color.
-                painter.setPen(QColor(self.text_color))
-                painter.setBrush(QColor(0, 0, 0, 50))
-
+            if search_word and search_word in self.words:
                 # Init rectangle vars.
                 [x, y, w, h] = emacs_frame_info
                 first_window_y = y + h
@@ -100,31 +104,39 @@ class PlaceInfo(QObject):
                         first_window_y = info[1]
 
                 # Get multi-line translation.
-                (text_content, text_lines, text_line_number) = self.format_translation(self.words[word])
+                (text_content, text_lines, text_line_number) = self.format_translation(self.words[search_word])
 
-                # Calculate translation width and height.
-                metrics = QFontMetrics(painter.font())
-                text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
+                if len(text_lines) > 0:
+                    # Set font.
+                    painter.setFont(self.font)
 
-                # Calculate render rectangle.
-                text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
-                                                 first_window_y + self.margin + self.padding_vertical,
-                                                 text_width,
-                                                 9999,  # some large height to accommodate the content
-                                                 Qt.AlignmentFlag.AlignRight,
-                                                 text_content)
+                    # Set text and fill color.
+                    painter.setPen(QColor(self.text_color))
+                    painter.setBrush(QColor(0, 0, 0, 50))
 
-                background_rect = QRectF(text_rect)
-                background_rect = background_rect.adjusted(-self.padding_horizontal,
-                                                           -self.padding_vertical,
-                                                           self.padding_horizontal,
-                                                           self.padding_vertical)
+                    # Calculate translation width and height.
+                    metrics = QFontMetrics(painter.font())
+                    text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
 
-                # Draw round rectangle.
-                path = QPainterPath()
-                roundness = 5
-                path.addRoundedRect(background_rect, roundness, roundness)
-                painter.fillPath(path, painter.brush())
+                    # Calculate render rectangle.
+                    text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
+                                                     first_window_y + self.margin + self.padding_vertical,
+                                                     text_width,
+                                                     9999,  # some large height to accommodate the content
+                                                     Qt.AlignmentFlag.AlignRight,
+                                                     text_content)
 
-                # Draw translation.
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
+                    background_rect = QRectF(text_rect)
+                    background_rect = background_rect.adjusted(-self.padding_horizontal,
+                                                               -self.padding_vertical,
+                                                               self.padding_horizontal,
+                                                               self.padding_vertical)
+
+                    # Draw round rectangle.
+                    path = QPainterPath()
+                    roundness = 5
+                    path.addRoundedRect(background_rect, roundness, roundness)
+                    painter.fillPath(path, painter.brush())
+
+                    # Draw translation.
+                    painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
