@@ -47,6 +47,26 @@ class PlaceInfo(QObject):
         else:
             message_emacs("StarDic dictionary {}.ifo is not exists".format(dictionary_path))
 
+    def format_translation(self, translation):
+        # Sort by word type.
+        text = re.sub(r';(\w+\.)', r'\n\1', translation)
+
+        # Filter empty translation.
+        text_lines = list(filter(lambda t: t != "", text.split("\n")))
+
+        # Filter long translation.
+        text_lines = list(map(lambda line: self.short_translation_line(line), text_lines))
+
+        # Join to multi-line content.
+        text_content = "\n".join(text_lines)
+
+        return (text_content, text_lines, len(text_lines))
+
+    def short_translation_line(self, line):
+        words = line.split(";")
+        short_words = list(filter(lambda w: len(w) < 15, words))
+        return ";".join(short_words)
+
     def draw(self, painter, window_info, emacs_frame_info, word):
         if self.show_info and len(window_info) > 0:
             if word in self.words:
@@ -70,9 +90,10 @@ class PlaceInfo(QObject):
                         first_window_y = info[1]
 
                 metrics = QFontMetrics(painter.font())
-                text = re.sub(r';(\w+\.)', r'\n\1', self.words[word])
-                text_width = metrics.horizontalAdvance(text)
-                text_height = metrics.height()
+                (text_content, text_lines, text_line_number) = self.format_translation(self.words[word])
+
+                text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
+                text_height = metrics.height() * text_line_number
 
                 background_rect = QRectF(x + w - text_width - self.margin - self.padding_horizontal * 2,
                                          first_window_y + self.margin,
@@ -89,4 +110,4 @@ class PlaceInfo(QObject):
                                   text_height)
                 painter.drawText(text_rect,
                                  Qt.AlignmentFlag.AlignRight,
-                                 re.sub(r';(\w+\.)', r'\n\1', self.words[word]))
+                                 re.sub(r';(\w+\.)', r'\n\1', text_content))
