@@ -123,14 +123,15 @@ class HoloWindow(QWidget):
         self.setStyleSheet("background-color:transparent;")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
+        screen = QGuiApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        self.setGeometry(screen_geometry)
+
         if platform.system() == "Darwin":
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.NoDropShadowWindowHint)
 
             # for Mac, we need to set the window to the screen size
-            screen = QGuiApplication.primaryScreen()
-            screen_geometry = screen.availableGeometry()
             self.window_bias_x, self.window_bias_y = screen_geometry.x(), screen_geometry.y()
-            self.setGeometry(screen_geometry)
             self.show()
         else:
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.Tool)
