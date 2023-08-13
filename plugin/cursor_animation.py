@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject, QTimer, QPointF,  QLineF
-from PyQt6.QtGui import QColor, QPolygonF, QPen
+from PyQt6.QtGui import QColor, QPolygonF, QPen, QLinearGradient
 from utils import *
 
 class CursorAnimation(QObject):
@@ -22,15 +22,17 @@ class CursorAnimation(QObject):
         (self.cursor_animation_duration,
          self.cursor_animation_interval,
          self.cursor_animation_type,
+         self.cursor_color_gradient,
          self.enable_cursor_animation) = get_emacs_vars(["holo-layer-cursor-animation-duration",
                                                          "holo-layer-cursor-animation-interval",
                                                          "holo-layer-cursor-animation-type",
+                                                         "holo-layer-cursor-animation-color-gradient",
                                                          "holo-layer-enable-cursor-animation"])
 
     def update_cursor_color(self):
         (cursor_color,
          cursor_alpha) = get_emacs_vars(["holo-layer-cursor-color",
-                                            "holo-layer-cursor-alpha"])
+                                         "holo-layer-cursor-alpha"])
         self.cursor_color = QColor(cursor_color)
         self.cursor_color.setAlpha(cursor_alpha)
 
@@ -164,7 +166,15 @@ class CursorAnimation(QObject):
                 painter.setBrush(self.cursor_color)
                 painter.drawPolygon(arrow)
             else:
-                painter.setBrush(self.cursor_color)
                 painter.setPen(self.cursor_color)
+
+                if self.cursor_color_gradient:
+                    gradient = QLinearGradient(self.cursor_start, self.cursor_end)
+                    gradient.setColorAt(0.0, self.cursor_color.lighter(200))
+                    gradient.setColorAt(1.0, self.cursor_color)
+                    painter.setBrush(gradient)
+                else:
+                    painter.setBrush(self.cursor_color)
+
                 polygon = self.cursor_animation_draw()
                 painter.drawPolygon(polygon)
