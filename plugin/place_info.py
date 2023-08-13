@@ -102,12 +102,9 @@ class PlaceInfo(QObject):
                 # Get multi-line translation.
                 (text_content, text_lines, text_line_number) = self.format_translation(self.words[word])
 
-                print("****** ", text_content)
-
                 # Calculate translation width and height.
                 metrics = QFontMetrics(painter.font())
                 text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
-                text_height = metrics.height() * text_line_number
 
                 # Calculate render rectangle.
                 text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
@@ -117,10 +114,11 @@ class PlaceInfo(QObject):
                                                  Qt.AlignmentFlag.AlignRight,
                                                  text_content)
 
-                background_rect = QRectF(x + w - text_width - self.margin - self.padding_horizontal * 2,
-                                         first_window_y + self.margin,
-                                         text_width + self.padding_horizontal * 2,
-                                         text_height + self.padding_vertical * 2)
+                background_rect = QRectF(text_rect)
+                background_rect = background_rect.adjusted(-self.padding_horizontal,
+                                                           -self.padding_vertical,
+                                                           self.padding_horizontal,
+                                                           self.padding_vertical)
 
                 # Draw round rectangle.
                 path = QPainterPath()
