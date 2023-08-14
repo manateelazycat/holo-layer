@@ -32,6 +32,7 @@ from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
 from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
+from plugin.window_screenshot import WindowScreenshot
 from utils import *
 
 
@@ -114,6 +115,14 @@ class HoloLayer:
     def hide_window_number(self):
         self.holo_window.hide_window_number()
 
+    def take_window_screenshot(self, screenshot_window_info):
+        self.screenshot_window_info = screenshot_window_info
+        self.take_screenshot()
+
+    @PostGui()
+    def take_screenshot(self):
+        self.holo_window.window_screenshot.take_screenshot(self.screenshot_window_info, self.emacs_frame_info)
+
     def cleanup(self):
         """Do some cleanup before exit python process."""
         close_epc_client()
@@ -131,6 +140,7 @@ class HoloWindow(QWidget):
 
         self.window_border = WindowBorder()
         self.window_number = WindowNumber()
+        self.window_screenshot = WindowScreenshot()
         self.cursor_animation = CursorAnimation(self)
         self.place_info = PlaceInfo()
 

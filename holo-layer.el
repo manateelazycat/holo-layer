@@ -609,6 +609,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
           (holo-layer-call-async "hide_window_number"))
       (message "Only one window, don't need switch."))))
 
+(defun holo-layer-take-window-screenshot ()
+  (interactive)
+  (holo-layer-call-async "take_window_screenshot" (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window))))
+
 (provide 'holo-layer)
 
 ;;; holo-layer.el ends here
