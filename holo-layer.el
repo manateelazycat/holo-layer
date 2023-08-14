@@ -601,13 +601,21 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-jump-to-window ()
   (interactive)
   (let ((windows (sort (cl-remove-if #'window-dedicated-p (window-list)) 'holo-layer-compare-windows)))
-    (if (> (length windows) 1)
-        (progn
-          (holo-layer-call-async "show_window_number")
-          (ignore-errors
-            (select-window (nth (- (read-number "Jump to window number: ") 1) windows)))
-          (holo-layer-call-async "hide_window_number"))
-      (message "Only one window, don't need switch."))))
+    (cond ((length> windows 2)
+           (progn
+             (holo-layer-call-async "show_window_number")
+             (ignore-errors
+               (let* ((prompt "Jump to window number: ")
+                      (window-number
+                       (if (length> windows 9)
+                           (read-number prompt)
+                         (string-to-number (string (read-char prompt))))))
+                 (select-window (nth (- window-number 1) windows))))
+             (holo-layer-call-async "hide_window_number")))
+          ((length= windows 2)
+           (other-window 1))
+          (t
+           (message "Only one window, don't need switch.")))))
 
 (provide 'holo-layer)
 
