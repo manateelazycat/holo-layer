@@ -434,11 +434,12 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defun holo-layer-focus-in-hook-function ()
   (setq holo-layer-emacs-is-focus-p t)
+  (holo-layer-call-async "show_holo_window")
   (holo-layer-monitor-configuration-change))
 
 (defun holo-layer-focus-out-hook-function ()
   (setq holo-layer-emacs-is-focus-p nil)
-  (holo-layer-monitor-configuration-change))
+  (holo-layer-call-async "hide_holo_window"))
 
 (defvar holo-layer-cache-emacs-frame-info nil)
 (defvar holo-layer-cache-window-info nil)

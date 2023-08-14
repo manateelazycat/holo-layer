@@ -82,14 +82,22 @@ class HoloLayer:
                 self.window_info = []
                 self.cursor_info = []
             else:
-                self.window_info = list(map(lambda info: info.split(":"),
-                                            self.window_info_args.split(",")))
+                self.window_info = list(map(lambda info: info.split(":"), self.window_info_args.split(",")))
                 self.cursor_info = self.cursor_info_args.split(':')
+
             self.update()
         elif cursor_info_args != self.cursor_info_args:
             self.cursor_info_args = cursor_info_args
             self.cursor_info = self.cursor_info_args.split(':')
             self.update()
+
+    @PostGui()
+    def show_holo_window(self):
+        self.holo_window.show_up()
+
+    @PostGui()
+    def hide_holo_window(self):
+        self.holo_window.hide()
 
     @PostGui()
     def update(self):
@@ -133,15 +141,18 @@ class HoloWindow(QWidget):
         self.setStyleSheet("background-color:transparent;")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
-        screen = QGuiApplication.primaryScreen()
-        screen_geometry = screen.availableGeometry()
-        self.setGeometry(screen_geometry)
+        self.screen = QGuiApplication.primaryScreen()
+        self.screen_geometry = self.screen.availableGeometry()
+        self.setGeometry(self.screen_geometry)
 
+        self.show_up()
+
+    def show_up(self):
         if platform.system() == "Darwin":
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.NoDropShadowWindowHint)
 
             # for Mac, we need to set the window to the screen size
-            self.window_bias_x, self.window_bias_y = screen_geometry.x(), screen_geometry.y()
+            self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
             self.show()
         else:
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.Tool)
