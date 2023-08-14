@@ -237,22 +237,18 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
     ;;(holo-layer-start-process)
     ))
 
-(defvar holo-layer-is-starting nil)
 (defvar holo-layer-first-call-method nil)
 (defvar holo-layer-first-call-args nil)
 
 (defun holo-layer-restart-process ()
   "Stop and restart Holo-Layer process."
   (interactive)
-  (setq holo-layer-is-starting nil)
-
   (holo-layer-kill-process)
   (holo-layer-start-process)
   (message "[Holo-Layer] Process restarted."))
 
 (defun holo-layer-start-process ()
   "Start Holo-Layer process if it isn't started."
-  (setq holo-layer-is-starting t)
   (if (holo-layer-epc-live-p holo-layer-epc-process)
       (remove-hook 'post-command-hook #'holo-layer-start-process)
     ;; start epc server and set `holo-layer-server-port'
@@ -318,7 +314,6 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
                                 :connection (holo-layer-epc-connect "127.0.0.1" holo-layer-epc-port)
                                 ))
   (holo-layer-epc-init-epc-layer holo-layer-epc-process)
-  (setq holo-layer-is-starting nil)
 
   (when (and holo-layer-first-call-method
              holo-layer-first-call-args)
@@ -613,9 +608,6 @@ Including title-bar, menu-bar, offset depends on window system, and border."
             (select-window (nth (- (read-number "Jump to window number: ") 1) windows)))
           (holo-layer-call-async "hide_window_number"))
       (message "Only one window, don't need switch."))))
-
-(unless holo-layer-is-starting
-  (holo-layer-start-process))
 
 (provide 'holo-layer)
 
