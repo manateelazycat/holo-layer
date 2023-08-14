@@ -249,6 +249,44 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   (holo-layer-start-process)
   (message "[Holo-Layer] Process restarted."))
 
+(defun holo-layer--build-process-environment ()
+  ;; Turn on DEBUG info when `holo-layer-enable-debug' is non-nil.
+  (let ((environments (seq-filter
+                       (lambda (var)
+                         (and (not (string-match-p "QT_SCALE_FACTOR" var))
+                              (not (string-match-p "QT_SCREEN_SCALE_FACTOR" var))))
+                       process-environment)))
+    (when holo-layer-enable-debug
+      (add-to-list 'environments "QT_DEBUG_PLUGINS=1" t))
+
+    (unless (eq system-type 'darwin)
+      (add-to-list 'environments
+                   (cond
+                    ((holo-layer-emacs-running-in-wayland-native)
+                     ;; Wayland native need to set QT_AUTO_SCREEN_SCALE_FACTOR=1
+                     ;; otherwise Qt window only have half of screen.
+                     "QT_AUTO_SCREEN_SCALE_FACTOR=1")
+                    (t
+                     ;; XWayland need to set QT_AUTO_SCREEN_SCALE_FACTOR=0
+                     ;; otherwise Qt which explicitly force high DPI enabling get scaled TWICE.
+                     "QT_AUTO_SCREEN_SCALE_FACTOR=0"))
+                   t)
+
+      (add-to-list 'environments "QT_FONT_DPI=96" t)
+
+      ;; Make sure holo layer application scale support 4k screen.
+      (add-to-list 'environments "QT_SCALE_FACTOR=1" t)
+
+      ;; Fix CORS problem.
+      (add-to-list 'environments "QTWEBENGINE_CHROMIUM_FLAGS=--disable-web-security" t)
+
+      ;; Use XCB for input event transfer.
+      ;; Only enable this option on Linux platform.
+      (when (and (eq system-type 'gnu/linux)
+                 (not (holo-layer-emacs-running-in-wayland-native)))
+        (add-to-list 'environments "QT_QPA_PLATFORM=xcb" t)))
+    environments))
+
 (defun holo-layer-start-process ()
   "Start Holo-Layer process if it isn't started."
   (if (holo-layer-epc-live-p holo-layer-epc-process)
@@ -269,7 +307,8 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
         (setq holo-layer-internal-process-args holo-layer-args))
 
       ;; Start python process.
-      (let ((process-connection-type t))
+      (let ((process-connection-type t)
+            (process-environment (holo-layer--build-process-environment)))
         (setq holo-layer-internal-process
               (apply 'start-process
                      holo-layer-name holo-layer-name
