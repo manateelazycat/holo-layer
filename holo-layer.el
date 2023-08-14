@@ -223,6 +223,8 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
   :type 'list)
 
+(defconst holo-layer--w32-frame-p (eq (framep-on-display) 'w32))
+
 (defun holo-layer--user-emacs-directory ()
   "Get lang server with project path, file path or file extension."
   (expand-file-name user-emacs-directory))
@@ -412,7 +414,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (width (frame-pixel-width))
         (height (frame-pixel-height))
         (external-border-size (cdr (nth 2 (frame-geometry))))
-        (title-bar-size (or (cdr (nth 4 (frame-geometry)))
+        (title-bar-size (or (cdr (nth (if holo-layer--w32-frame-p 3 4) (frame-geometry)))
                             (cons 0 0))))
     (list (+ (car pos) (car external-border-size) (car title-bar-size))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
