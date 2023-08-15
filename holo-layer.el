@@ -545,10 +545,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (interactive)
   (when-let* ((p (point)) (window (selected-window))
               (cursor-pos
-               (or  (pos-visible-in-window-p p window t)
-                    ;; make cursor visble
-                    (and (redisplay)
-                         (pos-visible-in-window-p p window t))))
+               (or (pos-visible-in-window-p p window t)
+                   ;; make cursor visble
+                   (and (redisplay)
+                        (pos-visible-in-window-p p window t))))
               (window-allocation (holo-layer-get-window-allocation window))
               (window-margin (* (or (car (window-margins)) 0) (frame-char-width)))
               ;; Don't render cursor match below rules:
@@ -557,13 +557,16 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (ok-rendeor-cursor
                (and (not (equal major-mode 'eaf-mode))
                     (not (equal holo-layer-last-buffer-mode 'eaf-mode))
-                    (not (holo-layer-cursor-is-block-command-p)))))
+                    (not (holo-layer-cursor-is-block-command-p))))
+              (window-h (nth 3 window-allocation)))
 
     (setq holo-layer-last-buffer-mode major-mode)
-    (let* ((x (+ (nth 0 cursor-pos) (nth 0 window-allocation) window-margin))
-           (y (+ (nth 1 cursor-pos) (nth 1 window-allocation)))
-           (w (frame-char-width nil))
-           (h (frame-char-height nil)))
+    (let ((x (+ (nth 0 cursor-pos) (nth 0 window-allocation) window-margin))
+          (y (+ (nth 1 cursor-pos) (nth 1 window-allocation)))
+          (w (frame-char-width nil))
+          (h (frame-char-height nil)))
+      (when (> y window-h)
+        (setq y window-h))
       (format "%s:%s:%s:%s" x y w h))))
 
 (defun holo-layer-get-window-info (frame window current-window)
