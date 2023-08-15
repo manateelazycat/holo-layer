@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QLineF, QObject, QPointF, QTimer
+from PyQt6.QtCore import QLineF, QObject, QPointF, QTimer, QEasingCurve
 from PyQt6.QtGui import QColor, QLinearGradient, QPen, QPolygonF
 
 from utils import *
@@ -92,7 +92,7 @@ class CursorAnimation(QObject):
 
         self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
 
-    def cursor_animation_draw_jelly_cursor(self, cs, ce, ws, hs, we, he, p):
+    def cursor_animation_draw_jelly_cursor_old(self, cs, ce, ws, hs, we, he, p):
         diff = cs - ce
         diff_x = diff.x()
         diff_y = diff.y()
@@ -125,6 +125,48 @@ class CursorAnimation(QObject):
         else:
             points[0] = points[3] * (p - 0.5) * 2 + points[0] * (1 - (p - 0.5) * 2)
             points[1] = points[2] * (p - 0.5) * 2 + points[1] * (1 - (p - 0.5) * 2)
+
+        return QPolygonF(points)
+
+    def cursor_animation_draw_jelly_cursor(self, cs, ce, ws, hs, we, he, p):
+        diff = ce - cs
+        diff_x = diff.x()
+        diff_y = diff.y()
+        start = [cs, cs + QPointF(ws, 0), cs + QPointF(ws, hs), cs + QPointF(0, hs)]
+        end = [ce, ce + QPointF(we, 0), ce + QPointF(we, he), ce + QPointF(0, he)]
+
+        easing = QEasingCurve(QEasingCurve.Type.InOutCubic)
+        def easing_clamp(x):
+            return easing.valueForProgress(max(0, (min(x, 1))))
+        p_slow = easing_clamp(5 / 3 * (p - 0.4))
+        p_norm = easing_clamp(5 / 3 * (p - 0.2))
+        p_fast = easing_clamp(5 / 3 * p)
+
+        if diff_x == 0:
+            if diff_y >= 0:
+                ps = [p_slow, p_slow, p_fast, p_fast]
+            else:
+                ps = [p_fast, p_fast, p_slow, p_slow]
+        elif diff_y == 0:
+            if diff_x >= 0:
+                ps = [p_slow, p_fast, p_fast, p_slow]
+            else:
+                ps = [p_fast, p_slow, p_slow, p_fast]
+        elif diff_x >=0:
+            if diff_y >=0:
+                ps = [p_slow, p_norm, p_fast, p_norm]
+            else:
+                ps = [p_norm, p_fast, p_norm, p_slow]
+        else:
+            if diff_y >= 0:
+                ps = [p_norm, p_slow, p_norm, p_fast]
+            else:
+                ps = [p_fast, p_norm, p_slow, p_norm]
+
+        points = [
+            p * e + (1 - p) * s
+            for p, s, e in zip(ps, start, end)
+        ]
 
         return QPolygonF(points)
 
