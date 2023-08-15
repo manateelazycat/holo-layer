@@ -42,10 +42,10 @@ class CursorAnimation(QObject):
 
         [x, y, w, h] = cursor_info
         if len(emacs_frame_info) > 1:
-            cursor_info = [int(x) + int(w) + emacs_frame_info[0],
+            cursor_info = [int(x) + emacs_frame_info[0],
                            int(y) + emacs_frame_info[1], int(w), int(h)]
         else:
-            cursor_info = [int(x) + int(w), int(y), int(w), int(h)]
+            cursor_info = [int(x), int(y), int(w), int(h)]
 
         self.cursor_info = cursor_info
         if len(self.cursor_prev_info) > 1 and \
