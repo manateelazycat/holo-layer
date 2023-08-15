@@ -18,9 +18,6 @@ class CursorAnimation(QObject):
         self.cursor_timer.timeout.connect(self.cursor_animation_tik)
         self.cursor_animation_percent = 1
 
-        self.cursor_info = []
-        self.cursor_prev_info = []
-
         (self.cursor_animation_duration,
          self.cursor_animation_interval,
          self.cursor_animation_type,
@@ -49,7 +46,6 @@ class CursorAnimation(QObject):
                            int(y) + emacs_frame_info[1], int(w), int(h)]
         else:
             cursor_info = [int(x) + int(w), int(y), int(w), int(h)]
-        [x, y, w, h] = cursor_info
 
         self.cursor_info = cursor_info
         if len(self.cursor_prev_info) > 1 and \
