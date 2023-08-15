@@ -70,7 +70,8 @@ class CursorAnimation(QObject):
         if prev_x != x or prev_y != y:
             self.cursor_start = QPointF(prev_x, prev_y)
             self.cursor_end = QPointF(x, y)
-            self.cursor_wh = [w, h]
+            self.cursor_start_wh = [prev_w, prev_h]
+            self.cursor_end_wh = [w, h]
 
             self.elapsed_time = 0
             #self.cursor_animation_tik()
@@ -91,29 +92,32 @@ class CursorAnimation(QObject):
 
         self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
 
-    def cursor_animation_draw_jelly_cursor(self, cs, ce, w, h, p):
+    def cursor_animation_draw_jelly_cursor(self, cs, ce, ws, hs, we, he, p):
         diff = cs - ce
         diff_x = diff.x()
         diff_y = diff.y()
-        w_point = QPointF(w, 0)
-        h_point = QPointF(0, h)
-        wh_point = QPointF(w, h)
+        ws_point = QPointF(ws, 0)
+        hs_point = QPointF(0, hs)
+        we_point = QPointF(we, 0)
+        he_point = QPointF(0, he)
+        whs_point = QPointF(ws, hs)
+        whe_point = QPointF(we, he)
 
         points = []
         if diff_x * diff_y > 0:
-            points = [cs, cs + wh_point, ce + wh_point, ce]
+            points = [cs, cs + whs_point, ce + whe_point, ce]
         elif diff_x * diff_y < 0:
-            points = [cs + h_point, cs + w_point, ce + w_point, ce + h_point]
+            points = [cs + hs_point, cs + ws_point, ce + we_point, ce + he_point]
         elif diff_x == 0:
             if diff_y >= 0:
-                points = [cs + h_point, cs + wh_point, ce + w_point, ce]
+                points = [cs + hs_point, cs + whs_point, ce + we_point, ce]
             else:
-                points = [cs, cs + w_point, ce + wh_point, ce + h_point]
+                points = [cs, cs + ws_point, ce + whe_point, ce + he_point]
         elif diff_y == 0:
             if diff_x >= 0:
-                points = [cs + w_point, cs + wh_point, ce + h_point, ce]
+                points = [cs + ws_point, cs + whs_point, ce + he_point, ce]
             else:
-                points = [cs, cs + h_point, ce + wh_point, ce + w_point]
+                points = [cs, cs + hs_point, ce + whe_point, ce + we_point]
 
         if p < 0.5:
             points[2] = points[2] * p * 2 + points[1] * (1 - p * 2)
@@ -145,11 +149,12 @@ class CursorAnimation(QObject):
         p = self.cursor_animation_percent
         cs = self.cursor_start
         ce = self.cursor_end
-        [w, h] = self.cursor_wh
+        [ws, hs] = self.cursor_start_wh
+        [we, he] = self.cursor_end_wh
         if self.cursor_animation_type == "arrow":
-            return self.cursor_animation_draw_arrow_cursor(cs, ce, w, h, p)
+            return self.cursor_animation_draw_arrow_cursor(cs, ce, ws, hs, p)
         else:
-            return self.cursor_animation_draw_jelly_cursor(cs, ce, w, h, p)
+            return self.cursor_animation_draw_jelly_cursor(cs, ce, ws, hs, we, he, p)
 
     def draw(self, painter):
         if self.cursor_animation_percent < 1 and self.enable_cursor_animation:
