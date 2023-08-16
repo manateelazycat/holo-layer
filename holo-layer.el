@@ -563,6 +563,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                (and (not (equal major-mode 'eaf-mode))
                     (not (equal holo-layer-last-buffer-mode 'eaf-mode))
                     (not (holo-layer-cursor-is-block-command-p))))
+              (window-y (nth 2 window-allocation))
               (window-h (nth 3 window-allocation))
               (left-fringe-w (car (window-fringes))))
 
@@ -576,8 +577,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                    (aref glyph 4)
                  (window-font-width))))
           (h (line-pixel-height)))
-      (when (and (> y window-h) (equal holo-layer-last-window (selected-window)))
-        (setq y window-h))
+      (when (and (> y (+ window-y window-h)) (equal holo-layer-last-window (selected-window)))
+        (setq y (+ window-y window-h)))
       (setq holo-layer-last-window (selected-window))
       (format "%s:%s:%s:%s" x y w h))))
 
