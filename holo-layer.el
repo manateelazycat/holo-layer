@@ -164,8 +164,8 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   :type 'boolean)
 
 (defcustom holo-layer-cursor-animation-type "jelly"
-  "Cursor animation type can be (jelly, arrow)"
-  :type 'boolean)
+  "Cursor animation type can be (jelly, arrow, jelly easing)"
+  :type 'string)
 
 (defcustom holo-layer-cursor-color (face-background 'cursor)
   "Cursor color."

@@ -92,7 +92,7 @@ class CursorAnimation(QObject):
 
         self.cursor_timer.singleShot(self.cursor_animation_interval, self.cursor_animation_tik)
 
-    def cursor_animation_draw_jelly_cursor_old(self, cs, ce, ws, hs, we, he, p):
+    def cursor_animation_draw_jelly_cursor(self, cs, ce, ws, hs, we, he, p):
         diff = cs - ce
         diff_x = diff.x()
         diff_y = diff.y()
@@ -128,7 +128,7 @@ class CursorAnimation(QObject):
 
         return QPolygonF(points)
 
-    def cursor_animation_draw_jelly_cursor(self, cs, ce, ws, hs, we, he, p):
+    def cursor_animation_draw_jelly_easing_cursor(self, cs, ce, ws, hs, we, he, p):
         diff = ce - cs
         diff_x = diff.x()
         diff_y = diff.y()
@@ -195,6 +195,8 @@ class CursorAnimation(QObject):
         [we, he] = self.cursor_end_wh
         if self.cursor_animation_type == "arrow":
             return self.cursor_animation_draw_arrow_cursor(cs, ce, ws, hs, p)
+        elif self.cursor_animation_type == "jelly easing":
+            return self.cursor_animation_draw_jelly_easing_cursor(cs, ce, ws, hs, we, he, p)
         else:
             return self.cursor_animation_draw_jelly_cursor(cs, ce, ws, hs, we, he, p)
 
