@@ -199,7 +199,7 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Place info font size."
   :type 'integer)
 
-(defcustom holo-layer-show-place-info-p nil
+(defcustom holo-layer-enable-place-info nil
   "Turn on the option to display some information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, which is disabled by default."
   :type 'boolean)
 
@@ -210,6 +210,10 @@ Default is `kdic-ec-11w', you can replace it with StarDict dictionary path
 Example, if you have dictionary `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated.ifo',
 you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated', not include `.ifo' extension."
   :type 'string)
+
+(defcustom holo-layer-enable-window-border nil
+  "Show window border if enable this option."
+  :type 'boolean)
 
 (defcustom holo-layer-window-number-color "#cc2444"
   "Color for window number."

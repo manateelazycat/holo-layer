@@ -26,20 +26,21 @@ Note: If you are using Conda or other virtual environments, please first set `ho
 
 
 ## Options
+* holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
+* holo-layer-enable-place-info: Display information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, it is off by default
+* holo-layer-enable-window-border: Display window border, it is off by default
+* holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is off by default
 * holo-layer-active-window-color: The border color of the active window, only displayed when there are more than two windows
 * holo-layer-inactive-window-color: The border color of the inactive window, only displayed when there are more than two windows
-* holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
-* holo-layer-cursor-color: The color of the jelly cursor, by default it is the same as the background color of the Emacs cursor
+* holo-layer-cursor-color: The color of the jelly cursor, by default it matches the background color of the Emacs cursor
 * holo-layer-cursor-alpha: The Alpha transparency of the jelly cursor, the default is 200, completely transparent is 0, opaque is 255
 * holo-layer-cursor-animation-interval: The interval time of the jelly cursor animation, the default is 10ms, don't worry about the time interval, because the animation effect is drawn with PyQt multithreading, it does not affect Emacs performance
-* holo-layer-cursor-block-commands: If in some cases you do not want to display cursor animations, you can add the command string to this list, for example, after `self-insert-command` is added to the list, inserting characters will not produce animations
-* holo-layer-place-info-text-color: Text color of the information at the cursor, the default is the foreground color of `default`
-* holo-layer-place-info-background-color: Background color of the information at the cursor, the default is the background color of `default`
+* holo-layer-cursor-block-commands: If you don't want to display cursor animation in some cases, you can add the command string to this list, for example, after `self-insert-command` is added to the list, inserting characters will not produce animation
+* holo-layer-place-info-text-color: The text color of the information at the cursor, the default is the foreground color of `default`
+* holo-layer-place-info-background-color: The background color of the information at the cursor, the default is the background color of `default`
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18
-* holo-layer-show-place-info-p: Displays information at the cursor in the top right corner of the screen, such as the translation of the word at the cursor, default is off
-* holo-layer-window-number-color: The color of the window jump number, used to jump windows with the `holo-layer-jump-to-window` command
+* holo-layer-window-number-color: The color of the window jump number, use the `holo-layer-jump-to-window` command to jump windows
 * holo-layer-window-number-font-size: The font size of the window jump number, the default is 40
-* holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is disabled by default
 
 ## Feedback Issues
 

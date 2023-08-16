@@ -9,41 +9,40 @@ class WindowBorder(QObject):
     def __init__(self) -> None:
         super().__init__()
 
-        self.active_window_border_color = None
-        self.inactive_window_border_color = None
+        (active_window_border_color,
+         inactive_window_border_color,
+         self.enable_window_border) = get_emacs_vars(["holo-layer-active-window-color",
+                                                      "holo-layer-inactive-window-color",
+                                                      "holo-layer-enable-window-border"])
+
+        self.active_window_border_color = QColor(active_window_border_color)
+        self.inactive_window_border_color = QColor(inactive_window_border_color)
 
     def draw(self, painter, window_info, emacs_frame_info):
-        if self.active_window_border_color is None:
-            (active_window_border_color,
-             inactive_window_border_color) = get_emacs_vars(["holo-layer-active-window-color",
-                                                             "holo-layer-inactive-window-color"])
+        if self.enable_window_border:
+            if len(window_info) == 1:
+                # Draw 1 pixel mode-line when only
+                [x, y, w, h, _] = window_info[0]
+                [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
 
-            self.active_window_border_color = QColor(active_window_border_color)
-            self.inactive_window_border_color = QColor(inactive_window_border_color)
+                painter.setPen(self.active_window_border_color)
+                painter.drawRect(x + emacs_x, y + emacs_y + h - 1, w, 1)
+            elif len(window_info) > 1:
+                # Draw inactive window border.
+                for info in window_info:
+                    [x, y, w, h, is_active_window] = info
 
-        if len(window_info) == 1:
-            # Draw 1 pixel mode-line when only
-            [x, y, w, h, _] = window_info[0]
-            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+                    if is_active_window == "nil":
+                        painter.setPen(self.inactive_window_border_color)
+                        self.draw_window_border(painter, emacs_frame_info, info)
 
-            painter.setPen(self.active_window_border_color)
-            painter.drawRect(x + emacs_x, y + emacs_y + h - 1, w, 1)
-        elif len(window_info) > 1:
-            # Draw inactive window border.
-            for info in window_info:
-                [x, y, w, h, is_active_window] = info
+                # Draw active window border.
+                for info in window_info:
+                    [x, y, w, h, is_active_window] = info
 
-                if is_active_window == "nil":
-                    painter.setPen(self.inactive_window_border_color)
-                    self.draw_window_border(painter, emacs_frame_info, info)
-
-            # Draw active window border.
-            for info in window_info:
-                [x, y, w, h, is_active_window] = info
-
-                if is_active_window == "t":
-                    painter.setPen(self.active_window_border_color)
-                    self.draw_window_border(painter, emacs_frame_info, info)
+                    if is_active_window == "t":
+                        painter.setPen(self.active_window_border_color)
+                        self.draw_window_border(painter, emacs_frame_info, info)
 
     def draw_window_border(self, painter, emacs_frame_info, info):
         [x, y, w, h, is_active_window] = info

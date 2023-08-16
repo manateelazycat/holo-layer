@@ -24,7 +24,7 @@ class PlaceInfo(QObject):
          self.background_color,
          self.font_size,
          self.search_dictionary] = get_emacs_vars([
-            "holo-layer-show-place-info-p",
+            "holo-layer-enable-place-info",
             "holo-layer-place-info-text-color",
             "holo-layer-place-info-background-color",
             "holo-layer-place-info-font-size",
