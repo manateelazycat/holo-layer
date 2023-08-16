@@ -563,7 +563,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                (and (not (equal major-mode 'eaf-mode))
                     (not (equal holo-layer-last-buffer-mode 'eaf-mode))
                     (not (holo-layer-cursor-is-block-command-p))))
-              (window-y (nth 2 window-allocation))
+              (window-y (nth 1 window-allocation))
               (window-h (nth 3 window-allocation))
               (left-fringe-w (car (window-fringes))))
 
