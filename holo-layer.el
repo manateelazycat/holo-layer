@@ -567,6 +567,17 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (window-h (nth 3 window-allocation))
               (left-fringe-w (car (window-fringes))))
 
+    (when-let* ((overlays (overlays-at p))
+                (overlay
+                 (catch 'after-cursor-overlay
+                   (while overlays
+                     (when (= p (overlay-start (car overlays)))
+                       (throw 'after-cursor-overlay (car overlays)))
+                     (setq overlays (cdr overlays))))))
+      (setq cursor-pos
+            `(,(- (nth 0 cursor-pos) (string-pixel-width (overlay-get overlay 'display)))
+              ,(nth 1 cursor-pos))))
+
     (setq holo-layer-last-buffer-mode major-mode)
     (let ((x (+ (nth 0 cursor-pos) (nth 0 window-allocation)
                 window-margin left-fringe-w))
