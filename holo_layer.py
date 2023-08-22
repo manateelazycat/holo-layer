@@ -24,15 +24,15 @@ import sys
 import threading
 
 from epc.server import ThreadingEPCServer
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QGuiApplication, QPainter
-from PyQt6.QtWidgets import QApplication, QWidget
-
 from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
 from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
+from pynput.keyboard import Listener as kbListener
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QGuiApplication, QPainter
+from PyQt6.QtWidgets import QApplication, QWidget
 from utils import *
 
 
@@ -48,6 +48,8 @@ class HoloLayer:
         self.cursor_info = []
         self.emacs_frame_info = None
         self.holo_window = HoloWindow()
+        self.holo_window_is_show = True
+        self.emacs_xid = None
 
         # Build EPC server.
         self.server = ThreadingEPCServer(('127.0.0.1', 0), log_traceback=True)
@@ -66,6 +68,10 @@ class HoloLayer:
         # Start EPC server with sub-thread, avoid block Qt main loop.
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         self.server_thread.start()
+
+        # Start key event listener thread.
+        self.key_event_listener = threading.Thread(target=self.listen_key_event)
+        self.key_event_listener.start()
 
         # Pass epc port and webengine codec information to Emacs when first start holo-layer.
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
@@ -94,10 +100,12 @@ class HoloLayer:
 
     @PostGui()
     def show_holo_window(self):
+        self.holo_window_is_show = True
         self.holo_window.show_up()
 
     @PostGui()
     def hide_holo_window(self):
+        self.holo_window_is_show = False
         self.holo_window.hide()
 
     @PostGui()
@@ -122,6 +130,55 @@ class HoloLayer:
     @PostGui()
     def take_screenshot(self):
         self.holo_window.window_screenshot.take_screenshot(self.screenshot_window_info, self.emacs_frame_info)
+
+    def listen_key_event(self):
+        while True:
+            with kbListener(
+                    on_press=self.key_press,
+                    on_release=self.key_release) as listener:
+                listener.join()
+
+    def key_press(self, key):
+        pass
+
+    def key_release(self, key):
+        if self.get_active_window_id() == self.get_emacs_id():
+            if not self.holo_window_is_show:
+                self.show_holo_window()
+        else:
+            if self.holo_window_is_show:
+                self.hide_holo_window()
+
+    def get_emacs_id(self):
+        if platform.system() == "Windows":
+            import pygetwindow as gw
+            return gw.getActiveWindow()._hWnd
+        else:
+            if self.emacs_xid is None:
+                self.emacs_xid = get_emacs_func_result("get-emacs-id")
+
+            return self.emacs_xid
+
+    def get_active_window_id(self):
+        if self.is_darwin():
+            from AppKit import NSWorkspace
+            return NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationProcessIdentifier']
+        else:
+            from Xlib import X
+            from Xlib.display import Display
+
+            if not hasattr(self, "NET_ACTIVE_WINDOW"):
+                self.disp = Display()
+                self.root = self.disp.screen().root
+                self.NET_ACTIVE_WINDOW = self.disp.intern_atom('_NET_ACTIVE_WINDOW')
+
+            response = self.root.get_full_property(self.NET_ACTIVE_WINDOW, X.AnyPropertyType)
+            win_id = response.value[0]
+
+            return win_id
+
+    def is_darwin(self):
+        return platform.system().lower() == "darwin"
 
     def cleanup(self):
         """Do some cleanup before exit python process."""
@@ -158,17 +215,18 @@ class HoloWindow(QWidget):
         self.show_up()
 
     def show_up(self):
-        if platform.system() == "Darwin":
-            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.NoDropShadowWindowHint)
+        if not self.isVisible():
+            if platform.system() == "Darwin":
+                self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.NoDropShadowWindowHint)
 
-            # for Mac, we need to set the window to the screen size
-            self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
-            self.show()
-        else:
-            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.Tool)
+                # for Mac, we need to set the window to the screen size
+                self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
+                self.show()
+            else:
+                self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.Tool)
 
-            self.window_bias_x, self.window_bias_y = 0, 0
-            self.showFullScreen()
+                self.window_bias_x, self.window_bias_y = 0, 0
+                self.showFullScreen()
 
     def paintEvent(self, event):
         painter = QPainter(self)

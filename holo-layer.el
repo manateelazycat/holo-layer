@@ -102,6 +102,7 @@
                (holo-layer-epc-define-method mngr 'get-emacs-var 'holo-layer--get-emacs-var-func)
                (holo-layer-epc-define-method mngr 'get-emacs-vars 'holo-layer--get-emacs-vars-func)
                (holo-layer-epc-define-method mngr 'get-user-emacs-directory 'holo-layer--user-emacs-directory)
+               (holo-layer-epc-define-method mngr 'get-emacs-id 'holo-layer--get-emacs-id)
                ))))
     (if holo-layer-server
         (setq holo-layer-server-port (process-contact holo-layer-server :service))
@@ -684,9 +685,16 @@ Including title-bar, menu-bar, offset depends on window system, and border."
           (t
            (message "Only one window, don't need switch.")))))
 
+
+
 (defun holo-layer-take-window-screenshot ()
   (interactive)
   (holo-layer-call-async "take_window_screenshot" (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window))))
+
+(defun holo-layer--get-emacs-id ()
+  (if (eq system-type 'darwin)
+      (emacs-pid)
+    (string-to-number (frame-parameter nil 'outer-window-id))))
 
 (provide 'holo-layer)
 

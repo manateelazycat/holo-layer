@@ -4,9 +4,12 @@ English | [简体中文](./README.zh-CN.md)
 HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is developed based on PyQt, aiming to significantly enhance the visual experience of Emacs. The plugin provides a series of visual enhancement features, including modern window borders, window jump prompts, cursor animations, window screenshots, transparent floating terminals, and real-time dictionaries, etc. These features not only make the Emacs interface look more modern, but also ensure that the performance of Emacs will not be affected.
 
 ## Installation
-1. Install Emacs 28 or above (For MacOS, please use Emacs without fullscreen)
-2. Install Python dependencies: `pip3 install epc sexpdata six inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
-3. Use `git clone` to download this repository, and replace the load-path path in the configuration below
+1. Install Emacs 28 or above (For MacOS, please use window mode)
+2. Install Python dependencies: 
+ - Linux: `pip3 install epc sexpdata six pynput inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
+ - Windows: `pip3 install epc sexpdata six pynput inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - macOS: `pip3 install epc sexpdata six pynput inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
+3. Download this repository using `git clone`, and replace the load-path in the configuration below
 4. Add the following code to your configuration file ~/.emacs:
 
 ```elisp
