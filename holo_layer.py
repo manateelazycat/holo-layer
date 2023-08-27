@@ -50,6 +50,7 @@ class HoloLayer:
         self.holo_window = HoloWindow()
         self.holo_window_is_show = True
         self.emacs_xid = None
+        self.emacs_name = None
 
         # Build EPC server.
         self.server = ThreadingEPCServer(('127.0.0.1', 0), log_traceback=True)
@@ -151,8 +152,11 @@ class HoloLayer:
 
     def get_emacs_id(self):
         if platform.system() == "Windows":
-            import pygetwindow as gw
-            return gw.getActiveWindow()._hWnd
+            if self.emacs_name is None:
+                self.emacs_name = get_emacs_func_result("get-emacs-name")
+
+            windows = gw.getWindowsWithTitle(self.emacs_name)
+            return windows[0]._hWnd if len(windows) > 0 else None
         else:
             if self.emacs_xid is None:
                 self.emacs_xid = get_emacs_func_result("get-emacs-id")
@@ -160,9 +164,12 @@ class HoloLayer:
             return self.emacs_xid
 
     def get_active_window_id(self):
-        if self.is_darwin():
+        if platform.system() == "Darwin":
             from AppKit import NSWorkspace
             return NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationProcessIdentifier']
+        elif platform.system() == "Windows":
+            import pygetwindow as gw
+            return gw.getActiveWindow()._hWnd
         else:
             from Xlib import X
             from Xlib.display import Display
@@ -176,9 +183,6 @@ class HoloLayer:
             win_id = response.value[0]
 
             return win_id
-
-    def is_darwin(self):
-        return platform.system().lower() == "darwin"
 
     def cleanup(self):
         """Do some cleanup before exit python process."""

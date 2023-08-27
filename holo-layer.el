@@ -103,6 +103,7 @@
                (holo-layer-epc-define-method mngr 'get-emacs-vars 'holo-layer--get-emacs-vars-func)
                (holo-layer-epc-define-method mngr 'get-user-emacs-directory 'holo-layer--user-emacs-directory)
                (holo-layer-epc-define-method mngr 'get-emacs-id 'holo-layer--get-emacs-id)
+               (holo-layer-epc-define-method mngr 'get-emacs-name 'holo-layer--get-emacs-name)
                ))))
     (if holo-layer-server
         (setq holo-layer-server-port (process-contact holo-layer-server :service))
@@ -695,6 +696,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (if (eq system-type 'darwin)
       (emacs-pid)
     (string-to-number (frame-parameter nil 'outer-window-id))))
+
+(defun holo-layer--get-emacs-name ()
+  (frame-parameter nil 'name))
 
 (provide 'holo-layer)
 
