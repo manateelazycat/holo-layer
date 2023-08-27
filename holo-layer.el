@@ -229,6 +229,14 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "Cursor animation is disabled if the current command matches `holo-layer-cursor-block-commands'."
   :type 'list)
 
+(defcustom holo-layer-wm-name ""
+  "The desktop name, set by function `holo-layer--get-current-desktop-name'."
+  :type 'string)
+
+(defcustom holo-layer-no-refresh-wm '("dwm")
+  "When using the window managers in this list, do not manage holo-layer window."
+  :type 'list)
+
 (defconst holo-layer--w32-frame-p (eq (framep-on-display) 'w32))
 
 (defun holo-layer--user-emacs-directory ()
@@ -474,14 +482,27 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defvar holo-layer-emacs-is-focus-p t
   "Whether Emacs is currently focused.")
 
+(defun holo-layer--get-current-desktop-name ()
+  "Get current desktop name by `wmctrl'."
+  (if (string-empty-p holo-layer-wm-name)
+      (if (executable-find "wmctrl")
+          ;; Get desktop name by command `wmctrl -m'.
+          (cl-second (split-string (cl-first (split-string (shell-command-to-string "wmctrl -m") "\n")) ": "))
+        ;; Otherwise notify user and return emptry string.
+        (message "You need install wmctrl to get the name of desktop.")
+        "")
+    holo-layer-wm-name))
+
 (defun holo-layer-focus-in-hook-function ()
   (setq holo-layer-emacs-is-focus-p t)
-  (holo-layer-call-async "show_holo_window")
+  (unless (member (holo-layer--get-current-desktop-name) holo-layer-no-refresh-wm)
+    (holo-layer-call-async "show_holo_window"))
   (holo-layer-monitor-configuration-change))
 
 (defun holo-layer-focus-out-hook-function ()
   (setq holo-layer-emacs-is-focus-p nil)
-  (holo-layer-call-async "hide_holo_window"))
+  (unless (member (holo-layer--get-current-desktop-name) holo-layer-no-refresh-wm)
+    (holo-layer-call-async "hide_holo_window")))
 
 (defvar holo-layer-cache-emacs-frame-info nil)
 (defvar holo-layer-cache-window-info nil)
