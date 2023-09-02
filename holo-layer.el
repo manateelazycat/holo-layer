@@ -642,8 +642,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                 (if mark-active
                     (buffer-substring-no-properties (region-beginning) (region-end))
                   (thing-at-point 'word t)))))
-    (when word
-      (holo-layer-call-async "update_place_info" word))))
+    (holo-layer-call-async "update_place_info" (if word word ""))))
 
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
