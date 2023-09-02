@@ -220,15 +220,15 @@ class HoloWindow(QWidget):
 
     def show_up(self):
         if not self.isVisible():
+            window_flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus
             if platform.system() == "Darwin":
-                self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.NoDropShadowWindowHint)
-
-                # for Mac, we need to set the window to the screen size
+                window_flags |= Qt.WindowType.NoDropShadowWindowHint
+                self.setWindowFlags(window_flags)
                 self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
                 self.show()
             else:
-                self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus | Qt.WindowType.Tool)
-
+                window_flags |= Qt.WindowType.Tool
+                self.setWindowFlags(window_flags)
                 self.window_bias_x, self.window_bias_y = 0, 0
                 self.showFullScreen()
 
