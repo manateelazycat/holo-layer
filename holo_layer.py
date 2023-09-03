@@ -152,6 +152,7 @@ class HoloLayer:
 
     def get_emacs_id(self):
         if platform.system() == "Windows":
+            import pygetwindow as gw
             if self.emacs_name is None:
                 self.emacs_name = get_emacs_func_result("get-emacs-name")
 
