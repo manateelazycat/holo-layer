@@ -385,7 +385,7 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   (eq window-system 'pgtk))
 
 (defun holo-layer--get-titlebar-height ()
-  "We need fetch height of window titlebar to adjust y coordinate of EAF when Emacs is not fullscreen."
+  "We need fetch height of window titlebar to adjust y coordinate of holo-layer when Emacs is not fullscreen."
   (cond ((holo-layer-emacs-running-in-wayland-native)
          (let ((is-fullscreen-p (memq (frame-parameter nil 'fullscreen) '(fullscreen fullboth))))
            (if is-fullscreen-p
@@ -401,7 +401,7 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
 (defvar holo-layer-build-dir (file-name-directory (locate-library "holo-layer")))
 
 (defun holo-layer--get-frame-coordinate ()
-  "We need fetch Emacs coordinate to adjust coordinate of EAF if it running on system not support cross-process reparent technology.
+  "We need fetch Emacs coordinate to adjust coordinate of holo-layer if it running on system not support cross-process reparent technology.
 
 Such as, wayland native, macOS etc."
   (cond ((string-equal (getenv "XDG_CURRENT_DESKTOP") "sway")
@@ -520,7 +520,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (setq holo-layer-last-cursor-info cursor-info)))
 
 (defun holo-layer-monitor-configuration-change (&rest _)
-  "EAF function to respond when detecting a window configuration change."
+  "Detecting a window configuration change."
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              ;; When current frame is same with `emacs-frame'.
              (equal (window-frame) holo-layer-emacs-frame))
@@ -529,7 +529,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
             (current-window (selected-window))
             view-infos)
         (cond
-         ;; Support EAF fullscreen.
+         ;; Support holo-layer fullscreen.
          ((or (not holo-layer-emacs-is-focus-p)
               (holo-layer-eaf-fullscreen-p))
           (holo-layer-call-async "update_window_info" emacs-frame-info "" ""))
