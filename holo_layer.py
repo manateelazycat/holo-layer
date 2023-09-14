@@ -45,7 +45,9 @@ class HoloLayer:
         self.window_info_args = None
         self.window_info = []
         self.cursor_info_args = None
+        self.menu_info_args = None
         self.cursor_info = []
+        self.menu_info = []
         self.emacs_frame_info = None
         self.holo_window = HoloWindow()
         self.holo_window_is_show = True
@@ -77,14 +79,16 @@ class HoloLayer:
         # Pass epc port and webengine codec information to Emacs when first start holo-layer.
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
 
-    def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args):
+    def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args, menu_info_args):
         cursor_info_args = cursor_info_args if len(cursor_info_args) else ""
         window_info_args = window_info_args if len(window_info_args) else ""
+        menu_info_args = menu_info_args if len(menu_info_args) else ""
 
-        if window_info_args != self.window_info_args:
+        if window_info_args != self.window_info_args or menu_info_args != self.menu_info_args:
             self.window_info_args = window_info_args
             self.cursor_info_args = cursor_info_args
             self.emacs_frame_info = emacs_frame_info
+            self.menu_info_args = menu_info_args
 
             if self.window_info_args == "":
                 self.window_info = []
@@ -92,6 +96,8 @@ class HoloLayer:
             else:
                 self.window_info = list(map(lambda info: info.split(":"), self.window_info_args.split(",")))
                 self.cursor_info = self.cursor_info_args.split(':')
+
+            self.menu_info = list(map(lambda info: info.split(":"), self.menu_info_args.split(",")))
 
             self.update()
         elif cursor_info_args != self.cursor_info_args:
@@ -111,7 +117,7 @@ class HoloLayer:
 
     @PostGui()
     def update(self):
-        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info)
+        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info)
 
     def update_place_info(self, word):
         self.holo_window.update_place_info(word)
@@ -197,6 +203,7 @@ class HoloWindow(QWidget):
         self.inactive_window_border_color = None
 
         self.emacs_frame_info = None
+        self.menu_info = None
         self.window_info = []
         self.place_word = ""
 
@@ -249,7 +256,7 @@ class HoloWindow(QWidget):
         painter.setBrush(background_color)
         painter.setPen(background_color)
 
-        self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
+        self.window_border.draw(painter, self.window_info, self.emacs_frame_info, self.menu_info)
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
 
@@ -263,10 +270,12 @@ class HoloWindow(QWidget):
             self.place_word = word
             self.update()
 
-    def update_info(self, emacs_frame_info, window_info, cursor_info):
+    def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info):
         self.emacs_frame_info = emacs_frame_info.copy()
         self.emacs_frame_info[0] -= self.window_bias_x
         self.emacs_frame_info[1] -= self.window_bias_y
+
+        self.menu_info = menu_info
 
         window_info = window_info.copy()
         for i in range(len(window_info)):

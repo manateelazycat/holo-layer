@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QObject
-from PyQt6.QtGui import QColor
+from PyQt6.QtCore import QObject, Qt, QRectF
+from PyQt6.QtGui import QColor, QPainterPath
 
 from utils import *
 
@@ -18,8 +18,34 @@ class WindowBorder(QObject):
         self.active_window_border_color = QColor(active_window_border_color)
         self.inactive_window_border_color = QColor(inactive_window_border_color)
 
-    def draw(self, painter, window_info, emacs_frame_info):
+    def draw(self, painter, window_info, emacs_frame_info, menu_info):
         if self.enable_window_border:
+
+            if emacs_frame_info:
+                [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+
+                emacs_area = QPainterPath()
+                emacs_area.addRect(QRectF(emacs_x, emacs_y, emacs_width, emacs_height))
+
+                if menu_info:
+                    total_mask = None
+
+                    for info in menu_info:
+                        try:
+                            (x, y, w, h) = info
+                            mask = QPainterPath()
+                            mask.addRect(int(x), int(y), int(w), int(h))
+
+                            if total_mask is None:
+                                total_mask = mask
+                            else:
+                                total_mask += mask
+                        except:
+                            pass
+
+                    if total_mask is not None:
+                        painter.setClipPath(emacs_area - total_mask, Qt.ClipOperation.IntersectClip)
+
             if len(window_info) == 1:
                 # Draw 1 pixel mode-line when only
                 [x, y, w, h, _] = window_info[0]

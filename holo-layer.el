@@ -515,7 +515,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
               (changed (and cursor-info
                             (not (equal cursor-info holo-layer-last-cursor-info)))))
     (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
-        (holo-layer-call-async "update_window_info" holo-layer-cache-emacs-frame-info holo-layer-cache-window-info cursor-info)
+        (holo-layer-call-async "update_window_info"
+                               holo-layer-cache-emacs-frame-info
+                               holo-layer-cache-window-info
+                               cursor-info
+                               (holo-layer-get-menu-info))
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
 
@@ -532,7 +536,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
          ;; Support holo-layer fullscreen.
          ((or (not holo-layer-emacs-is-focus-p)
               (holo-layer-eaf-fullscreen-p))
-          (holo-layer-call-async "update_window_info" emacs-frame-info "" ""))
+          (holo-layer-call-async "update_window_info"
+                                 emacs-frame-info
+                                 ""
+                                 ""
+                                 (holo-layer-get-menu-info)))
          ;; Support blink-search.
          ((and (require 'blink-search nil t)
                (equal (buffer-name (window-buffer current-window)) blink-search-input-buffer))
@@ -551,7 +559,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                   view-infos)
             (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
             ;; skip update cursor
-            (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
+            (holo-layer-call-async "update_window_info"
+                                   emacs-frame-info
+                                   holo-layer-cache-window-info
+                                   ""
+                                   (holo-layer-get-menu-info))))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -561,12 +573,46 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                 (push (holo-layer-get-window-info frame window current-window) view-infos))))
           (setq holo-layer-cache-window-info (mapconcat #'identity view-infos ","))
           ;; skip update cursor
-          (holo-layer-call-async "update_window_info" emacs-frame-info holo-layer-cache-window-info "")))
+          (holo-layer-call-async "update_window_info"
+                                 emacs-frame-info
+                                 holo-layer-cache-window-info
+                                 ""
+                                 (holo-layer-get-menu-info))))
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
 (defun holo-layer-cursor-is-block-command-p ()
   (member (format "%s" this-command) holo-layer-cursor-block-commands))
+
+(defun holo-layer-get-menu-info ()
+  (let ((info ""))
+    (when (featurep 'lsp-bridge)
+      (when (and (frame-live-p acm-menu-frame)
+                 (frame-visible-p acm-menu-frame))
+        (let* ((acm-menu-frame-pos (frame-position acm-menu-frame))
+               (acm-menu-frame-info (format "%s:%s:%s:%s"
+                                            (car acm-menu-frame-pos)
+                                            (cdr acm-menu-frame-pos)
+                                            (frame-outer-width acm-menu-frame)
+                                            (frame-outer-height acm-menu-frame)
+                                            )))
+          (setq info acm-menu-frame-info)))
+      (when (and (frame-live-p acm-doc-frame)
+                 (frame-visible-p acm-doc-frame))
+        (let* ((acm-doc-frame-pos (frame-position acm-doc-frame))
+               (acm-doc-frame-info (format "%s:%s:%s:%s"
+                                           (car acm-doc-frame-pos)
+                                           (cdr acm-doc-frame-pos)
+                                           (frame-outer-width acm-doc-frame)
+                                           (frame-outer-height acm-doc-frame)
+                                           )))
+          (if (string-equal info "")
+              (setq info acm-doc-frame-info)
+            (setq info (format "%s,%s" info acm-doc-frame-info)))
+          ))
+
+      info
+      )))
 
 (defun holo-layer-get-cursor-info ()
   "Get the pixel position of the cursor in the current window."
@@ -678,7 +724,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
   ;; hide holo layer
-  (holo-layer-call-async "update_window_info" (holo-layer-get-emacs-frame-info) ""))
+  (holo-layer-call-async "update_window_info"
+                         (holo-layer-get-emacs-frame-info)
+                         ""
+                         ""
+                         (holo-layer-get-menu-info)))
 
 (defun holo-layer-compare-windows (w1 w2)
   "Compare the positions of two windows. The upper bounds are compared first, and then the left bounds are compared if the upper bounds are the same."
