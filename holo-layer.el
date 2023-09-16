@@ -469,7 +469,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (external-border-size (cdr (nth 2 (frame-geometry))))
         (title-bar-size (or (cdr (nth (if holo-layer--w32-frame-p 3 4) (frame-geometry)))
                             (cons 0 0))))
-    (list (+ (car pos) (car external-border-size) (car title-bar-size))
+    (list (+ (car pos) (car external-border-size) (if (memq system-type '(cygwin windows-nt ms-dos)) 0 (car title-bar-size)))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
           width
           height)))
@@ -523,11 +523,18 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
 
+(defun holo-layer-monitor-frame-changed (_)
+  (when (not (equal (window-frame) holo-layer-emacs-frame))
+    (setq holo-layer-emacs-frame (window-frame))
+    )
+  )
+
 (defun holo-layer-monitor-configuration-change (&rest _)
   "Detecting a window configuration change."
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              ;; When current frame is same with `emacs-frame'.
-             (equal (window-frame) holo-layer-emacs-frame))
+             (or (memq system-type '(cygwin windows-nt ms-dos)) ;; Works on windows multiple frame
+                 (equal (window-frame) holo-layer-emacs-frame)))
     (ignore-errors
       (let ((emacs-frame-info (holo-layer-get-emacs-frame-info))
             (current-window (selected-window))
@@ -704,7 +711,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
-
+  
+  (if (memq system-type '(cygwin windows-nt ms-dos))
+    (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
+    )
+  
   (if holo-layer-hide-mode-line
       (setq-default mode-line-format nil)))
 
