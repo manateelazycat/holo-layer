@@ -529,12 +529,25 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     )
   )
 
+(defun holo-layer-monitor-frame-move(_)
+  "Detecting frame moved and update window info"
+  (when (holo-layer-epc-live-p holo-layer-epc-process)
+    (ignore-errors
+      (let ((emacs-frame-info (holo-layer-get-emacs-frame-info)))
+        (holo-layer-call-async "update_window_info"
+                               emacs-frame-info
+                               ""
+                               ""
+                               (holo-layer-get-menu-info))
+        (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
+        ))))
+
+
 (defun holo-layer-monitor-configuration-change (&rest _)
   "Detecting a window configuration change."
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              ;; When current frame is same with `emacs-frame'.
-             (or (memq system-type '(cygwin windows-nt ms-dos)) ;; Works on windows multiple frame
-                 (equal (window-frame) holo-layer-emacs-frame)))
+             (equal (window-frame) holo-layer-emacs-frame))
     (ignore-errors
       (let ((emacs-frame-info (holo-layer-get-emacs-frame-info))
             (current-window (selected-window))
@@ -712,9 +725,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
   
-  (if (memq system-type '(cygwin windows-nt ms-dos))
-    (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
-    )
+  (when (memq system-type '(cygwin windows-nt ms-dos))
+    (progn
+      (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
+      (add-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
+    ))
   
   (if holo-layer-hide-mode-line
       (setq-default mode-line-format nil)))
@@ -733,6 +748,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (remove-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
+
+  (remove-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
 
   ;; hide holo layer
   (holo-layer-call-async "update_window_info"
