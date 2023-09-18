@@ -469,7 +469,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (external-border-size (cdr (nth 2 (frame-geometry))))
         (title-bar-size (or (cdr (nth (if holo-layer--w32-frame-p 3 4) (frame-geometry)))
                             (cons 0 0))))
-    (list (+ (car pos) (car external-border-size) (car title-bar-size))
+    (list (+ (car pos) (car external-border-size) (if (memq system-type '(cygwin windows-nt ms-dos)) 0 (car title-bar-size)))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
           width
           height)))
@@ -522,6 +522,26 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                (holo-layer-get-menu-info))
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
+
+(defun holo-layer-monitor-frame-changed (_)
+  (when (not (equal (window-frame) holo-layer-emacs-frame))
+    (setq holo-layer-emacs-frame (window-frame))
+    )
+  )
+
+(defun holo-layer-monitor-frame-move(_)
+  "Detecting frame moved and update window info"
+  (when (holo-layer-epc-live-p holo-layer-epc-process)
+    (ignore-errors
+      (let ((emacs-frame-info (holo-layer-get-emacs-frame-info)))
+        (holo-layer-call-async "update_window_info"
+                               emacs-frame-info
+                               ""
+                               ""
+                               (holo-layer-get-menu-info))
+        (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
+        ))))
+
 
 (defun holo-layer-monitor-configuration-change (&rest _)
   "Detecting a window configuration change."
@@ -704,7 +724,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
-
+  
+  (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
+  (add-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
+  
   (if holo-layer-hide-mode-line
       (setq-default mode-line-format nil)))
 
@@ -722,6 +745,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (remove-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
+
+  (advice-remove #'other-frame #'holo-layer-monitor-frame-changed)
+  (remove-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
 
   ;; hide holo layer
   (holo-layer-call-async "update_window_info"
