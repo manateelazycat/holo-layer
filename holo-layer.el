@@ -725,11 +725,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
   
-  (when (memq system-type '(cygwin windows-nt ms-dos))
-    (progn
-      (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
-      (add-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
-    ))
+  (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
+  (add-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
   
   (if holo-layer-hide-mode-line
       (setq-default mode-line-format nil)))
@@ -749,6 +746,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (remove-hook 'focus-in-hook 'holo-layer-focus-in-hook-function)
   (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
+  (advice-remove #'other-frame #'holo-layer-monitor-frame-changed)
   (remove-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
 
   ;; hide holo layer
