@@ -19,7 +19,6 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 ```
 
 备注： 
-* holo-layer 在 Windows 和 Linux 下暂时只能在全屏下工作
 * 如果你用 Conda 或者其他虚拟环境， 请先设置 `holo-layer-python-command` 为对应的 Python 路径。
 
 ## Demo
