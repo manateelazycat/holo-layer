@@ -261,7 +261,7 @@ class HoloWindow(QWidget):
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
 
         if self.show_window_number_flag:
-            self.window_number.draw(painter, self.window_info)
+            self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
 
     def update_place_info(self, word):
         word = word.lower()

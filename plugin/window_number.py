@@ -23,12 +23,13 @@ class WindowNumber(QObject):
 
         self.margin_left = 20
 
-    def draw(self, painter, window_info):
+    def draw(self, painter, window_info, emacs_frame_info):
         if len(window_info) > 1:
+            [emacs_x, emacs_y, emacs_w, emacs_h] = emacs_frame_info
             for index, info in enumerate(sorted(window_info, key=lambda window: (window[1], window[0]))):
                 [x, y, w, h, is_active_window] = info
 
                 painter.setFont(self.font)
 
                 painter.setPen(self.text_color)
-                painter.drawText(QRectF(x + self.margin_left, y, w, h), Qt.AlignmentFlag.AlignLeft, str(index + 1))
+                painter.drawText(QRectF(emacs_x + x + self.margin_left, emacs_y + y, w, h), Qt.AlignmentFlag.AlignLeft, str(index + 1))
