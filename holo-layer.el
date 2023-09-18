@@ -523,11 +523,17 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
 
-(defun holo-layer-monitor-frame-changed (_)
-  (when (not (equal (window-frame) holo-layer-emacs-frame))
+(defun holo-layer-monitor-frame-changed (&rest _)
+  (when (and (holo-layer-epc-live-p holo-layer-epc-process)
+             (not (equal (window-frame) holo-layer-emacs-frame)))
     (setq holo-layer-emacs-frame (window-frame))
-    )
-  )
+    ))
+
+(defun holo-layer-monitor-make-frame (frame)
+  (when (and (holo-layer-epc-live-p holo-layer-epc-process)
+             (not (equal frame holo-layer-emacs-frame)))
+    (setq holo-layer-emacs-frame frame)
+    ))
 
 (defun holo-layer-monitor-frame-move(_)
   "Detecting frame moved and update window info"
@@ -710,6 +716,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                   (thing-at-point 'word t)))))
     (holo-layer-call-async "update_place_info" (if word word ""))))
 
+
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
 
@@ -726,7 +733,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
   
   (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
+  (advice-add #'maximize-frame :after #'holo-layer-monitor-frame-changed)
+  (advice-add #'mouse-set-point :after #'holo-layer-monitor-frame-changed)
   (add-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
+  (add-hook 'after-make-frame-functions #'holo-layer-monitor-make-frame)
   
   (if holo-layer-hide-mode-line
       (setq-default mode-line-format nil)))
@@ -747,7 +757,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (remove-hook 'focus-out-hook 'holo-layer-focus-out-hook-function)
 
   (advice-remove #'other-frame #'holo-layer-monitor-frame-changed)
+  (advice-remove #'maximize-frame #'holo-layer-monitor-frame-changed)
+  (advice-remove #'mouse-set-point #'holo-layer-monitor-frame-changed)
   (remove-hook 'move-frame-functions #'holo-layer-monitor-frame-move)
+  (remove-hook 'after-make-frame-functions #'holo-layer-monitor-make-frame)
 
   ;; hide holo layer
   (holo-layer-call-async "update_window_info"
