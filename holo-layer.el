@@ -217,6 +217,10 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "Show window border if enable this option."
   :type 'boolean)
 
+(defcustom holo-layer-enable-window-number-background nil
+  "Show background for window number more clarity if enable this option."
+  :type 'boolean)
+
 (defcustom holo-layer-window-number-color "#cc2444"
   "Color for window number."
   :type 'string)
