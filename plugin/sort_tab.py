@@ -160,7 +160,6 @@ class SortTab(QObject):
         icon_name = "{}.{}".format(mime, "png")
         icon_path = os.path.join(self.icon_cache_dir, icon_name)
 
-
         if not os.path.exists(icon_path):
             icon = QIcon.fromTheme(mime, QIcon("text-plain"))
 
@@ -170,11 +169,11 @@ class SortTab(QObject):
                 icon = QIcon.fromTheme("text-plain")
 
             icon.pixmap(64, 64).save(icon_path)
-        else:
-            print("***** ", tab_name, mime)
 
         icon_padding_x = 10
         icon_offset = 0
+
+        print("***** ", tab_name, mime)
 
         if os.path.exists(icon_path):
             icon_offset = self.icon_size + icon_padding_x
