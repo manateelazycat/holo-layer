@@ -11,6 +11,18 @@ FILE_MIME_DICT = {
     "vue": "application-javascript"
 }
 
+MODE_ICON_DICT = {
+    "eaf-file-manager": "directory",
+    "eaf-browser": "browser",
+    "eaf-git": "git",
+    "eaf-map": "map",
+    "eaf-rss-reader": "rss-reader",
+    "eaf-music-player": "music-player",
+    "eaf-pyqterminal": "terminal",
+    "eaf-terminal": "terminal",
+    "eaf-camera": "camera"
+}
+
 class SortTab(QObject):
 
     def __init__(self) -> None:
@@ -152,25 +164,14 @@ class SortTab(QObject):
         file_info = QtCore.QFileInfo(tab_name)
         file_suffix = file_info.suffix()
 
-        if file_suffix in FILE_MIME_DICT:
+        if mode_name in MODE_ICON_DICT:
+            mime = MODE_ICON_DICT[mode_name]
+        elif file_suffix in FILE_MIME_DICT:
             mime = FILE_MIME_DICT[file_suffix]
         else:
             mime = self.mime_db.mimeTypeForFile(file_info).name().replace("/", "-")
 
-        if mode_name == "eaf-file-manager":
-            icon_name = "directory.png"
-        elif mode_name == "eaf-browser":
-            icon_name = "browser.png"
-        elif mode_name == "eaf-git":
-            icon_name = "git.png"
-        elif mode_name == "eaf-map":
-            icon_name = "map.png"
-        elif mode_name == "eaf-rss-reader":
-            icon_name = "rss-reader.png"
-        elif mode_name == "eaf-music-player":
-            icon_name = "music-player.png"
-        else:
-            icon_name = "{}.{}".format(mime, "png")
+        icon_name = "{}.{}".format(mime, "png")
         icon_path = os.path.join(self.icon_cache_dir, icon_name)
 
         if not os.path.exists(icon_path):
