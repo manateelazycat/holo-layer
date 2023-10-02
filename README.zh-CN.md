@@ -37,6 +37,8 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 
 为了标签上正确显示图标， 你需要安装图标主题 `WhiteSur`
 
+所有图标都放在子目录 icon_cache 下面， 欢迎贡献你认为好看的图标， 图标可以从 https://devicon.dev 或 https://icons8.com/icons/set/programming-language 这样的网站去查找。
+
 ## 选项
 * holo-layer-enable-cursor-animation: 是否开启果冻光标的动画， 默认是关闭的
 * holo-layer-enable-place-info: 在屏幕右上角显示光标处信息， 比如光标处单词的翻译， 默认关闭

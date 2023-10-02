@@ -37,6 +37,8 @@ Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then 
 
 In order to display the icons correctly on the label, you need to install the icon theme `WhiteSur`
 
+All icons are placed under the subdirectory `icon_cache`. You're welcome to contribute icons that you think look good. Icons can be found from websites such as https://devicon.dev or https://icons8.com/icons/set/programming-language.
+
 ## Options
 * holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
 * holo-layer-enable-place-info: Display information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, it is off by default
