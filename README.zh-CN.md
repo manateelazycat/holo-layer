@@ -28,6 +28,14 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
+### 现代化的标签栏
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
+</p>
+
+需要先安装 [sort-tab](https://github.com/manateelazycat/sort-tab), 再打开选项 `holo-layer-sort-tab-ui`
+
+
 ## 选项
 * holo-layer-enable-cursor-animation: 是否开启果冻光标的动画， 默认是关闭的
 * holo-layer-enable-place-info: 在屏幕右上角显示光标处信息， 比如光标处单词的翻译， 默认关闭
@@ -44,6 +52,9 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 * holo-layer-place-info-font-size: 光标处信息的字体大小， 默认是 18
 * holo-layer-window-number-color: 窗口跳转数字的颜色, 用 `holo-layer-jump-to-window` 命令跳转窗口
 * holo-layer-window-number-font-size: 窗口跳转数字的字体大小， 默认是 40
+* holo-layer-sort-tab-ui: 是否渲染现代标签栏， 默认是 nil, 需要先安装 [sort-tab](https://github.com/manateelazycat/sort-tab)
+* holo-layer-sort-tab-font-size: 标签栏的文字大小
+
 
 ## 反馈问题
 

@@ -28,6 +28,12 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
+### Modern Tab Line
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
+</p>
+
+Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then enable option `holo-layer-sort-tab-ui`
 
 ## Options
 * holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
@@ -45,6 +51,8 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18
 * holo-layer-window-number-color: The color of the window jump number, use the `holo-layer-jump-to-window` command to jump windows
 * holo-layer-window-number-font-size: The font size of the window jump number, the default is 40
+* holo-layer-sort-tab-ui: Whether to show sort-tab ui, default is nil, need install [sort-tab](https://github.com/manateelazycat/sort-tab) first
+* holo-layer-sort-tab-font-size: The font size of sort-tab 
 
 ## Feedback Issues
 
