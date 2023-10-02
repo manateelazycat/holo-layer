@@ -22,7 +22,7 @@ class SortTab(QObject):
     def draw(self, painter, emacs_frame_info, sort_tab_info):
         painter.save()
 
-        print("***** ", emacs_frame_info, sort_tab_info)
+        print("**** ", emacs_frame_info, sort_tab_info)
 
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info:
             theme_mode = sort_tab_info["emacs_theme_mode"]

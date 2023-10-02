@@ -275,11 +275,11 @@ class HoloWindow(QWidget):
         painter.setBrush(background_color)
         painter.setPen(background_color)
 
+        self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
+
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info, self.menu_info)
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
-
-        self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
