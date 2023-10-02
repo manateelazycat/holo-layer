@@ -89,7 +89,7 @@ class SortTab(QObject):
                 for index, tab_name in enumerate(tab_names):
                     tab_width = metrics.horizontalAdvance(tab_name)
 
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name)
+                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     if index >= current_tab_index:
                         [x, y, w, h] = emacs_frame_info
@@ -103,7 +103,7 @@ class SortTab(QObject):
                 for index, tab_name in enumerate(tab_names):
                     tab_width = metrics.horizontalAdvance(tab_name)
 
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name)
+                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     if index == sort_tab_info["current_tab_index"]:
                         painter.setPen(QColor(tab_active_background_color))
@@ -137,7 +137,7 @@ class SortTab(QObject):
                 for index, tab_name in enumerate(tab_names):
                     tab_width = metrics.horizontalAdvance(tab_name)
 
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name)
+                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     if index != len(tab_names) - 1:
                         painter.setPen(QColor(tab_spliter_color))
@@ -148,7 +148,7 @@ class SortTab(QObject):
 
         painter.restore()
 
-    def get_tab_icon_info(self, tab_name):
+    def get_tab_icon_info(self, tab_name, mode_name):
         file_info = QtCore.QFileInfo(tab_name)
         file_suffix = file_info.suffix()
 
@@ -157,7 +157,20 @@ class SortTab(QObject):
         else:
             mime = self.mime_db.mimeTypeForFile(file_info).name().replace("/", "-")
 
-        icon_name = "{}.{}".format(mime, "png")
+        if mode_name == "eaf-file-manager":
+            icon_name = "directory.png"
+        elif mode_name == "eaf-browser":
+            icon_name = "browser.png"
+        elif mode_name == "eaf-git":
+            icon_name = "git.png"
+        elif mode_name == "eaf-map":
+            icon_name = "map.png"
+        elif mode_name == "eaf-rss-reader":
+            icon_name = "rss-reader.png"
+        elif mode_name == "eaf-music-player":
+            icon_name = "music-player.png"
+        else:
+            icon_name = "{}.{}".format(mime, "png")
         icon_path = os.path.join(self.icon_cache_dir, icon_name)
 
         if not os.path.exists(icon_path):
@@ -173,7 +186,7 @@ class SortTab(QObject):
         icon_padding_x = 10
         icon_offset = 0
 
-        print("***** ", tab_name, mime)
+        print("***** ", tab_name, mode_name, mime)
 
         if os.path.exists(icon_path):
             icon_offset = self.icon_size + icon_padding_x

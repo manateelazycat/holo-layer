@@ -141,11 +141,12 @@ class HoloLayer:
         self.holo_window.window_screenshot.take_screenshot(self.screenshot_window_info, self.emacs_frame_info)
 
     @PostGui()
-    def render_sort_tab(self, tab_names, current_tab_index, current_tab_name,
+    def render_sort_tab(self, tab_names, tab_modes, current_tab_index, current_tab_name,
                         tab_height, tab_name_max_length,
                         emacs_theme_mode, emacs_theme_foreground_color, emacs_theme_background_color):
         self.sort_tab_info = {
             "tab_names": tab_names,
+            "tab_modes": tab_modes,
             "current_tab_index": current_tab_index,
             "current_tab_name": current_tab_name,
             "tab_height": tab_height,

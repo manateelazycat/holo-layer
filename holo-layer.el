@@ -839,13 +839,21 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-get-theme-foreground-color ()
   (format "%s" (frame-parameter nil 'foreground-color)))
 
+(defun holo-layer-get-buffer-mode (buf)
+  (let ((mode (with-current-buffer buf (format "%s" major-mode))))
+    (pcase mode
+      ("eaf-mode" (format "eaf-%s" (with-current-buffer buf eaf--buffer-app-name)))
+      (_ mode))))
+
 (defun holo-layer-render-sort-tab (visible-buffer-infos current-buffer)
   (let* ((tab-names (mapcar #'buffer-name visible-buffer-infos))
+         (tab-modes (mapcar #'holo-layer-get-buffer-mode visible-buffer-infos))
          (current-tab-name (buffer-name current-buffer))
          (current-tab-index (or (cl-position current-buffer visible-buffer-infos)
                                 0)))
     (holo-layer-call-async "render_sort_tab"
                            tab-names
+                           tab-modes
                            current-tab-index
                            current-tab-name
                            (window-pixel-height (get-buffer-window sort-tab-buffer-name))
