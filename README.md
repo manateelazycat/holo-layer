@@ -35,7 +35,7 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 
 Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then enable option `holo-layer-sort-tab-ui`
 
-
+In order to display the icons correctly on the label, you need to install the icon theme `WhiteSur`
 
 ## Options
 * holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
