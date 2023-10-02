@@ -7,7 +7,8 @@ from utils import *
 import os
 
 FILE_MIME_DICT = {
-    "json": "application-json"
+    "json": "application-json",
+    "vue": "application-javascript"
 }
 
 class SortTab(QObject):
