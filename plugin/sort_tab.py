@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QObject, Qt, QRectF
-from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont
+from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QRegion
 
 from utils import *
 
@@ -22,8 +22,11 @@ class SortTab(QObject):
     def draw(self, painter, emacs_frame_info, sort_tab_info):
         painter.save()
 
-        print("**** ", emacs_frame_info, sort_tab_info)
-
+        # Set clip to entire emacs area, allow to render sort-tab.
+        if emacs_frame_info:
+            [x, y, w, h] = emacs_frame_info
+            painter.setClipRegion(QRegion(x, y, w, h))
+        
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info:
             theme_mode = sort_tab_info["emacs_theme_mode"]
             theme_foreground_color = sort_tab_info["emacs_theme_foreground_color"]

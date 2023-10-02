@@ -32,7 +32,7 @@ from plugin.window_screenshot import WindowScreenshot
 from plugin.sort_tab import SortTab
 from pynput.keyboard import Listener as kbListener
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QGuiApplication, QPainter
+from PyQt6.QtGui import QColor, QGuiApplication, QPainter, QPainterPath, QRegion
 from PyQt6.QtWidgets import QApplication, QWidget
 from utils import *
 
@@ -267,15 +267,19 @@ class HoloWindow(QWidget):
         painter.setPen(background_color)
 
         if self.emacs_frame_info:
+            # Set clip area, don't allow render sort-tab area to *avoid* flash sort-tab area.
+            if "tab_height" in self.sort_tab_info:
+                [x, y, w, h] = self.emacs_frame_info
+                painter.setClipRegion(QRegion(x, y + self.sort_tab_info["tab_height"], w, h - self.sort_tab_info["tab_height"]))
             painter.drawRect(*self.emacs_frame_info)
         else:
             painter.drawRect(self.rect())
 
+        self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
+
         self.cursor_animation.draw(painter)
         painter.setBrush(background_color)
         painter.setPen(background_color)
-
-        self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
 
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info, self.menu_info)
 
