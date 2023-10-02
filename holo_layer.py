@@ -29,6 +29,7 @@ from plugin.place_info import PlaceInfo
 from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
+from plugin.sort_tab import SortTab
 from pynput.keyboard import Listener as kbListener
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QGuiApplication, QPainter
@@ -48,6 +49,7 @@ class HoloLayer:
         self.menu_info_args = None
         self.cursor_info = []
         self.menu_info = []
+        self.sort_tab_info = {}
         self.emacs_frame_info = None
         self.holo_window = HoloWindow()
         self.holo_window_is_show = True
@@ -117,7 +119,7 @@ class HoloLayer:
 
     @PostGui()
     def update(self):
-        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info)
+        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info, self.sort_tab_info)
 
     def update_place_info(self, word):
         self.holo_window.update_place_info(word)
@@ -137,6 +139,22 @@ class HoloLayer:
     @PostGui()
     def take_screenshot(self):
         self.holo_window.window_screenshot.take_screenshot(self.screenshot_window_info, self.emacs_frame_info)
+
+    @PostGui()
+    def render_sort_tab(self, tab_names, current_tab_index, current_tab_name,
+                        tab_height, tab_name_max_length,
+                        emacs_theme_mode, emacs_theme_foreground_color, emacs_theme_background_color):
+        self.sort_tab_info = {
+            "tab_names": tab_names,
+            "current_tab_index": current_tab_index,
+            "current_tab_name": current_tab_name,
+            "tab_height": tab_height,
+            "tab_name_max_length": tab_name_max_length,
+            "emacs_theme_mode": emacs_theme_mode,
+            "emacs_theme_foreground_color": emacs_theme_foreground_color,
+            "emacs_theme_background_color": emacs_theme_background_color
+        }
+        self.update()
 
     def listen_key_event(self):
         while True:
@@ -205,6 +223,7 @@ class HoloWindow(QWidget):
         self.emacs_frame_info = None
         self.menu_info = None
         self.window_info = []
+        self.sort_tab_info = {}
         self.place_word = ""
 
         self.window_border = WindowBorder()
@@ -212,6 +231,7 @@ class HoloWindow(QWidget):
         self.window_screenshot = WindowScreenshot()
         self.cursor_animation = CursorAnimation(self)
         self.place_info = PlaceInfo()
+        self.sort_tab = SortTab()
 
         self.show_window_number_flag = False
 
@@ -251,7 +271,6 @@ class HoloWindow(QWidget):
         else:
             painter.drawRect(self.rect())
 
-
         self.cursor_animation.draw(painter)
         painter.setBrush(background_color)
         painter.setPen(background_color)
@@ -259,6 +278,8 @@ class HoloWindow(QWidget):
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info, self.menu_info)
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
+
+        self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
@@ -270,12 +291,14 @@ class HoloWindow(QWidget):
             self.place_word = word
             self.update()
 
-    def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info):
-        self.emacs_frame_info = emacs_frame_info.copy()
-        self.emacs_frame_info[0] -= self.window_bias_x
-        self.emacs_frame_info[1] -= self.window_bias_y
+    def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info):
+        if emacs_frame_info:
+            self.emacs_frame_info = emacs_frame_info.copy()
+            self.emacs_frame_info[0] -= self.window_bias_x
+            self.emacs_frame_info[1] -= self.window_bias_y
 
         self.menu_info = menu_info
+        self.sort_tab_info = sort_tab_info
 
         window_info = window_info.copy()
         for i in range(len(window_info)):

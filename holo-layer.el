@@ -241,6 +241,15 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "When using the window managers in this list, do not manage holo-layer window."
   :type 'list)
 
+(defcustom holo-layer-sort-tab-ui nil
+  "Whether render tab ui for sort-tab.
+
+Default is disable.")
+
+(defcustom holo-layer-sort-tab-font-size 18
+  "Sort tab font size."
+  :type 'integer)
+
 (defconst holo-layer--w32-frame-p (eq (framep-on-display) 'w32))
 
 (defun holo-layer--user-emacs-directory ()
@@ -727,6 +736,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (when holo-layer-enable-cursor-animation
     (add-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
+  (when (and holo-layer-sort-tab-ui
+             (require 'sort-tab nil t))
+    (setq sort-tab-render-function 'holo-layer-render-sort-tab))
+
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
@@ -750,6 +763,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (when holo-layer-enable-cursor-animation
     (remove-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
+
+  (when (and holo-layer-sort-tab-ui
+             (require 'sort-tab nil t))
+    (setq sort-tab-render-function 'sort-tab-render-tabs))
 
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
 
@@ -812,6 +829,31 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defun holo-layer--get-emacs-name ()
   (frame-parameter nil 'name))
+
+(defun holo-layer-get-theme-mode ()
+  (format "%s" (frame-parameter nil 'background-mode)))
+
+(defun holo-layer-get-theme-background-color ()
+  (format "%s" (frame-parameter nil 'background-color)))
+
+(defun holo-layer-get-theme-foreground-color ()
+  (format "%s" (frame-parameter nil 'foreground-color)))
+
+(defun holo-layer-render-sort-tab (visible-buffer-infos current-buffer)
+  (let* ((tab-names (mapcar #'buffer-name visible-buffer-infos))
+         (current-tab-name (buffer-name current-buffer))
+         (current-tab-index (or (cl-position current-buffer visible-buffer-infos)
+                                0)))
+    (holo-layer-call-async "render_sort_tab"
+                           tab-names
+                           current-tab-index
+                           current-tab-name
+                           (window-pixel-height (get-buffer-window sort-tab-buffer-name))
+                           sort-tab-name-max-length
+                           (holo-layer-get-theme-mode)
+                           (holo-layer-get-theme-foreground-color)
+                           (holo-layer-get-theme-background-color)
+                           )))
 
 (provide 'holo-layer)
 
