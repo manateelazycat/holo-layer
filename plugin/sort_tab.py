@@ -94,10 +94,22 @@ class SortTab(QObject):
 
             # Create tab colors.
             tab_active_text_color = theme_foreground_color
-            tab_inactive_text_color = QColor(tab_background_color).lighter(500).name()
             tab_active_background_color = theme_background_color
-            tab_inactive_background_color = QColor(tab_background_color).lighter(150).name()
-            tab_spliter_color = QColor(tab_background_color).lighter(180).name()
+
+            if theme_mode == "dark":
+                tab_inactive_text_color = QColor(tab_background_color).lighter(500).name()
+            else:
+                tab_inactive_text_color = QColor(tab_background_color).darker(300).name()
+
+            if theme_mode == "dark":
+                tab_inactive_background_color = QColor(tab_background_color).lighter(150).name()
+            else:
+                tab_inactive_background_color = QColor(tab_background_color).darker(110).name()
+
+            if theme_mode == "dark":
+                tab_spliter_color = QColor(tab_background_color).lighter(180).name()
+            else:
+                tab_spliter_color = QColor(tab_background_color).darker(130).name()
 
             # Draw tab background.
             [x, y, w, h] = emacs_frame_info
