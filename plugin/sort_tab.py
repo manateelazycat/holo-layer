@@ -32,7 +32,10 @@ class SortTab(QObject):
             "holo-layer-sort-tab-font-size"
         ])
 
+        self.scroll_pos = 0
         self.icon_size = 22
+        self.tab_padding_x = 15
+        self.tab_translate_offset = 60
 
         self.font_family = QFontDatabase.systemFont(
             QFontDatabase.SystemFont.FixedFont
@@ -94,8 +97,6 @@ class SortTab(QObject):
                 painter.setFont(self.font)
                 metrics = QFontMetrics(self.font)
 
-                tab_padding_x = 15
-
                 current_tab_index = sort_tab_info["current_tab_index"]
                 current_tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
@@ -103,13 +104,20 @@ class SortTab(QObject):
 
                     (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
+                    tab_left_edge_x = current_tab_x_offset
+                    tab_right_edge_x = current_tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2
+
                     if index >= current_tab_index:
                         [x, y, w, h] = emacs_frame_info
-                        tab_right_edge_x = current_tab_x_offset + icon_offset + tab_width + tab_padding_x * 2
-                        if tab_right_edge_x > w:
-                            painter.translate(-(tab_right_edge_x // w * w - icon_offset - tab_width - tab_padding_x * 2), 0)
+                        if tab_left_edge_x < self.scroll_pos:
+                            self.scroll_pos = max(tab_left_edge_x - self.tab_translate_offset, 0)
+                        elif tab_right_edge_x > self.scroll_pos + w:
+                            self.scroll_pos = tab_right_edge_x - w + self.tab_translate_offset
+
+                        painter.translate(-self.scroll_pos, 0)
                         break
-                    current_tab_x_offset += icon_offset + tab_width + tab_padding_x * 2
+
+                    current_tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
 
                 tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
@@ -124,13 +132,13 @@ class SortTab(QObject):
                         painter.setPen(QColor(tab_inactive_background_color))
                         painter.setBrush(QColor(tab_inactive_background_color))
 
-                    painter.drawRect(QRectF(tab_x_offset, 0, icon_offset + tab_width + tab_padding_x * 2, sort_tab_info["tab_height"]))
+                    painter.drawRect(QRectF(tab_x_offset, 0, icon_offset + tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]))
 
                     if os.path.exists(icon_path):
                         icon = QIcon(icon_path)
                         pixmap = icon.pixmap(self.icon_size, self.icon_size)
                         icon_padding_y = 2
-                        painter.drawPixmap(tab_x_offset + tab_padding_x, int((sort_tab_info["tab_height"] - self.icon_size) / 2) + icon_padding_y, pixmap)
+                        painter.drawPixmap(tab_x_offset + self.tab_padding_x, int((sort_tab_info["tab_height"] - self.icon_size) / 2) + icon_padding_y, pixmap)
 
                     if index == sort_tab_info["current_tab_index"]:
                         painter.setPen(QColor(tab_active_text_color))
@@ -139,11 +147,11 @@ class SortTab(QObject):
                         painter.setPen(QColor(tab_inactive_text_color))
                         painter.setBrush(QColor(tab_inactive_text_color))
 
-                    painter.drawText(QRectF(tab_x_offset + icon_offset, 0, tab_width + tab_padding_x * 2, sort_tab_info["tab_height"]),
+                    painter.drawText(QRectF(tab_x_offset + icon_offset, 0, tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]),
                                      Qt.AlignmentFlag.AlignCenter,
                                      tab_name)
 
-                    tab_x_offset += icon_offset + tab_width + tab_padding_x * 2
+                    tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
 
                 tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
@@ -154,9 +162,9 @@ class SortTab(QObject):
                     if index != len(tab_names) - 1:
                         painter.setPen(QColor(tab_spliter_color))
                         painter.setBrush(QColor(tab_spliter_color))
-                        painter.drawRect(QRectF(tab_x_offset + icon_offset + tab_width + tab_padding_x * 2, 0, 1, sort_tab_info["tab_height"]))
+                        painter.drawRect(QRectF(tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2, 0, 1, sort_tab_info["tab_height"]))
 
-                    tab_x_offset += icon_offset + tab_width + tab_padding_x * 2
+                    tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
 
         painter.restore()
 
