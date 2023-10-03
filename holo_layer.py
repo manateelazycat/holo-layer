@@ -142,8 +142,9 @@ class HoloLayer:
 
     @PostGui()
     def render_sort_tab(self, tab_names, tab_modes, current_tab_index, current_tab_name,
-                        tab_height, tab_name_max_length,
+                        tab_height, tab_name_max_length, emacs_frame_info,
                         emacs_theme_mode, emacs_theme_foreground_color, emacs_theme_background_color):
+        self.emacs_frame_info = emacs_frame_info
         self.sort_tab_info = {
             "tab_names": tab_names,
             "tab_modes": tab_modes,

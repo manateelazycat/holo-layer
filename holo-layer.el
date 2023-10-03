@@ -383,8 +383,7 @@ Default is disable.")
                                     holo-layer-first-call-args)
       (setq holo-layer-first-call-method nil)
       (setq holo-layer-first-call-args nil)
-      ))
-  )
+      )))
 
 (defun holo-layer-emacs-running-in-wayland-native ()
   (eq window-system 'pgtk))
@@ -515,7 +514,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (setq holo-layer-emacs-frame frame)
     ))
 
-(defun holo-layer-monitor-frame-move(_)
+(defun holo-layer-monitor-frame-move (_)
   "Detecting frame moved and update window info"
   (when (holo-layer-epc-live-p holo-layer-epc-process)
     (ignore-errors
@@ -818,6 +817,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                            current-tab-name
                            (window-pixel-height (get-buffer-window sort-tab-buffer-name))
                            sort-tab-name-max-length
+                           (holo-layer-get-emacs-frame-info)
                            (holo-layer-get-theme-mode)
                            (holo-layer-get-theme-foreground-color)
                            (holo-layer-get-theme-background-color)
