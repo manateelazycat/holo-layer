@@ -68,11 +68,6 @@ class SortTab(QObject):
         # Save painter to restore at last of draw function.
         painter.save()
 
-        # Set clip to entire emacs area, allow to render sort-tab.
-        if emacs_frame_info:
-            [x, y, w, h] = emacs_frame_info
-            painter.setClipRegion(QRegion(x, y, w, h))
-
         # Draw tab line background.
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info:
             # Get emacs theme colors.

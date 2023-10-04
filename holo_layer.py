@@ -269,10 +269,6 @@ class HoloWindow(QWidget):
         painter.setPen(background_color)
 
         if self.emacs_frame_info:
-            # Set clip area, don't allow render sort-tab area to *avoid* flash sort-tab area.
-            if "tab_height" in self.sort_tab_info:
-                [x, y, w, h] = self.emacs_frame_info
-                painter.setClipRegion(QRegion(x, y + self.sort_tab_info["tab_height"], w, h - self.sort_tab_info["tab_height"]))
             painter.drawRect(*self.emacs_frame_info)
         else:
             painter.drawRect(self.rect())
