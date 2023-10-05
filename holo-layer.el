@@ -815,9 +815,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                            tab-modes
                            current-tab-index
                            current-tab-name
-                           (window-pixel-height (get-buffer-window sort-tab-buffer-name))
+                           (window-pixel-height sort-tab-window)
                            sort-tab-name-max-length
-                           (holo-layer-get-emacs-frame-info)
+                           holo-layer-cache-emacs-frame-info
                            (holo-layer-get-theme-mode)
                            (holo-layer-get-theme-foreground-color)
                            (holo-layer-get-theme-background-color)
