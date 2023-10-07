@@ -472,6 +472,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (height (frame-pixel-height))
         (external-border-size (cdr (nth 2 (frame-geometry))))
         (title-bar-size (or (cdr (nth (if holo-layer--w32-frame-p 3 4) (frame-geometry)))
+                            (alist-get 'title-bar-size (frame-geometry))
                             (cons 0 0))))
     (list (+ (car pos) (car external-border-size) (if (memq system-type '(cygwin windows-nt ms-dos)) 0 (car title-bar-size)))
           (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
