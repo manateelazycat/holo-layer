@@ -4,7 +4,7 @@
 HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt 开发， 旨在显著增强 Emacs 的视觉体验。 插件提供了一系列的视觉效果增强功能， 包括现代化的窗口边框、 窗口跳转提示、 光标动画、 窗口截图、 透明浮动终端， 以及实时词典等等。 这些功能不仅让 Emacs 界面看起来更现代， 同时也确保了 Emacs 的运行性能不会受到影响。
 
 ## 安装
-1. 安装 Emacs 28 及以上版本 (MacOS 请使用窗口模式)
+1. 安装 Emacs 28 及以上版本 
 2. 安装 Python 依赖: 
  - Linux: `pip3 install epc sexpdata six pynput inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (ArchLinux 请用 pacman 来安装 PyQt6)
  - Windows: `pip3 install epc sexpdata six pynput inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
@@ -19,6 +19,7 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 ```
 
 备注： 
+* MacOS 请使用窗口模式
 * 如果你用 Conda 或者其他虚拟环境， 请先设置 `holo-layer-python-command` 为对应的 Python 路径。
 
 ## 演示效果
