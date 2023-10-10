@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, Qt, QRectF, QMimeDatabase
-from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QRegion
+from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon
 
 from utils import *
 
@@ -47,14 +47,6 @@ class SortTab(QObject):
         self.tab_padding_x = 15 # padding around tab text
         self.tab_icon_padding_right = 10 # padding between tab icon and tab text
         self.tab_translate_offset = 60 # translate offset, ensure that users can see whether there are other tabs around current tab
-
-        # TODO
-        # We need install WhiteSur icon theme now.
-        # We need remove below code after icon cache is enough.
-        if os.path.exists("/usr/share/icons/WhiteSur"):
-            QIcon.setThemeName("WhiteSur")
-        else:
-            message_emacs("You need install icon theme `WhiteSur` to show icon in sort-tab.")
 
         # Create icon cache directory.
         self.icon_cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "icon_cache")
@@ -229,24 +221,11 @@ class SortTab(QObject):
         icon_name = "{}.{}".format(mime, "png")
         icon_path = os.path.join(self.icon_cache_dir, icon_name)
 
-        # Try to fetch icon from system theme if icon cache not exists.
-        # Icon in system theme is small, not clear, suggest download icon from https://icons8.com/icons/set
-        if not os.path.exists(icon_path):
-            icon = QIcon.fromTheme(mime, QIcon("text-plain"))
-
-            # If nothing match, icon size is empty.
-            # Then we use fallback icon.
-            if icon.availableSizes() == []:
-                icon = QIcon.fromTheme("text-plain")
-
-            icon.pixmap(64, 64).save(icon_path)
-
-        # Debug code, remove it after icon cache is enough.
-        print("***** ", tab_name, mode_name, mime)
-
         # Return icon info.
         if os.path.exists(icon_path):
             icon_offset = self.tab_icon_size + self.tab_icon_padding_right
             return (icon_path, icon_offset)
         else:
+            # Print mime information if not found icon in cache directory.
+            print("***** ", tab_name, mode_name, mime)
             return (None, 0)

@@ -36,8 +36,6 @@ Note:
 
 Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then enable option `holo-layer-sort-tab-ui`
 
-In order to display the icons correctly on the label, you need to install the icon theme `WhiteSur`
-
 All icons are placed under the subdirectory `icon_cache`. You're welcome to contribute icons that you think look good. Icons can be found from websites such as https://devicon.dev or https://icons8.com/icons/set/programming-language.
 
 To modify the color of the svg icon, just add the `style="fill: hex-color"` attribute under path.
