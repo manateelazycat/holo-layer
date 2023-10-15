@@ -117,7 +117,8 @@ class SortTab(QObject):
                 current_tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
                     # Calculate tab width and icon offset.
-                    tab_width = metrics.horizontalAdvance(tab_name)
+                    tab_render_name = self.get_tab_render_name(tab_name)
+                    tab_width = metrics.horizontalAdvance(tab_render_name)
                     (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     # Calculable tab edge offfset.
@@ -148,7 +149,8 @@ class SortTab(QObject):
                 tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
                     # Get tab width and icon offset.
-                    tab_width = metrics.horizontalAdvance(tab_name)
+                    tab_render_name = self.get_tab_render_name(tab_name)
+                    tab_width = metrics.horizontalAdvance(tab_render_name)
                     (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     # Draw tab background.
@@ -180,7 +182,7 @@ class SortTab(QObject):
 
                     painter.drawText(QRectF(tab_x_offset + icon_offset, 0, tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]),
                                      Qt.AlignmentFlag.AlignCenter,
-                                     tab_name)
+                                     tab_render_name)
 
                     # Calculable tab render offset base on left tabs.
                     tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
@@ -189,7 +191,8 @@ class SortTab(QObject):
                 tab_x_offset = 0
                 for index, tab_name in enumerate(tab_names):
                     # Get tab width and icon offset.
-                    tab_width = metrics.horizontalAdvance(tab_name)
+                    tab_render_name = self.get_tab_render_name(tab_name)
+                    tab_width = metrics.horizontalAdvance(tab_render_name)
                     (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
 
                     # Draw tab spliter.
@@ -203,6 +206,14 @@ class SortTab(QObject):
 
         # Restore painter.
         painter.restore()
+
+    def get_tab_render_name(self, tab_name):
+        max_len = 50
+        if len(tab_name) <= max_len:
+            return tab_name
+        else:
+            half_len = max_len // 2
+            return tab_name[:half_len-2] + '...' + tab_name[-half_len+1:]
 
     def get_tab_icon_info(self, tab_name, mode_name):
         # Get file info.
