@@ -162,7 +162,7 @@ class SortTab(QObject):
                     painter.drawRect(QRectF(tab_x_offset, 0, icon_offset + tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]))
 
                     # Draw tab icon if tab has icon.
-                    if os.path.exists(icon_path):
+                    if icon_path and os.path.exists(icon_path):
                         icon = QIcon(icon_path)
                         pixmap = icon.pixmap(self.tab_icon_size, self.tab_icon_size)
                         icon_padding_y = 2
