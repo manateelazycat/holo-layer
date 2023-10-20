@@ -161,7 +161,7 @@ class SortTab(QObject):
                         painter.setPen(QColor(tab_inactive_background_color))
                         painter.setBrush(QColor(tab_inactive_background_color))
 
-                    painter.drawRect(QRectF(tab_x_offset, 0, icon_offset + tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]))
+                    painter.drawRect(QRectF(tab_x_offset, y, icon_offset + tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]))
 
                     # Draw tab icon if tab has icon.
                     if icon_path and os.path.exists(icon_path):
@@ -169,7 +169,7 @@ class SortTab(QObject):
                         pixmap = icon.pixmap(self.tab_icon_size, self.tab_icon_size)
                         icon_padding_y = 2
                         painter.drawPixmap(tab_x_offset + self.tab_padding_x,
-                                           int((sort_tab_info["tab_height"] - self.tab_icon_size) / 2) + icon_padding_y,
+                                           int((sort_tab_info["tab_height"] - self.tab_icon_size) / 2) + y + icon_padding_y,
                                            pixmap)
 
                     # Draw tab text.
@@ -180,7 +180,7 @@ class SortTab(QObject):
                         painter.setPen(QColor(tab_inactive_text_color))
                         painter.setBrush(QColor(tab_inactive_text_color))
 
-                    painter.drawText(QRectF(tab_x_offset + icon_offset, 0, tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]),
+                    painter.drawText(QRectF(tab_x_offset + icon_offset, y, tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]),
                                      Qt.AlignmentFlag.AlignCenter,
                                      tab_render_name)
 
@@ -199,7 +199,7 @@ class SortTab(QObject):
                     if index != len(tab_names) - 1:
                         painter.setPen(QColor(tab_spliter_color))
                         painter.setBrush(QColor(tab_spliter_color))
-                        painter.drawRect(QRectF(tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2, 0, 1, sort_tab_info["tab_height"]))
+                        painter.drawRect(QRectF(tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2, y, 1, sort_tab_info["tab_height"]))
 
                     # Calculable tab render offset base on left tabs.
                     tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2

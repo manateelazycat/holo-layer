@@ -107,7 +107,7 @@ class PlaceInfo(QObject):
                 # Calculate y coordinate of toppest window.
                 for info in window_info:
                     if info[1] < first_window_y:
-                        first_window_y = info[1]
+                        first_window_y = info[1] + y
 
                 # Get multi-line translation.
                 (text_content, text_lines, text_line_number) = self.format_translation(self.words[search_word])

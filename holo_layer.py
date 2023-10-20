@@ -32,7 +32,7 @@ from plugin.window_screenshot import WindowScreenshot
 from plugin.sort_tab import SortTab
 from pynput.keyboard import Listener as kbListener
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QGuiApplication, QPainter, QPainterPath, QRegion
+from PyQt6.QtGui import QColor, QGuiApplication, QPainter
 from PyQt6.QtWidgets import QApplication, QWidget
 from utils import *
 
