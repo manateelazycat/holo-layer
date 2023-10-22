@@ -257,7 +257,14 @@ class HoloWindow(QWidget):
                 self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
                 self.show()
             else:
-                window_flags |= Qt.WindowType.Tool
+                # Why use `SplashScreen` flag for holo-layer fullsreen window?
+                #
+                # Because below flag can't work. ;)
+                # 1. Qt.WindowType.Tool, holo-layer window coordinate will change when we do `workspace-switch` operation.
+                # 2. Qt.WindowType.Popup, popup window is modal window, and it will grab keyboard to cause system can't response keyboard event
+                # 3. Qt.WindowType.Tooltip or Qt.Window.X11BypassWindowManagerHint, window height can't fullscreen, window border at bottom can't render
+                # 4. Qt.WindowType.SubWindow, window can't skip taskbar or alt-tab window list.
+                window_flags |= Qt.WindowType.SplashScreen
                 self.setWindowFlags(window_flags)
                 self.window_bias_x, self.window_bias_y = 0, 0
                 self.showFullScreen()
