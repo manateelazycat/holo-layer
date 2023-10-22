@@ -19,32 +19,30 @@ class WindowBorder(QObject):
         self.inactive_window_border_color = QColor(inactive_window_border_color)
 
     def draw(self, painter, window_info, emacs_frame_info, menu_info):
-        if self.enable_window_border:
+        if self.enable_window_border and emacs_frame_info:
+            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
 
-            if emacs_frame_info:
-                [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+            emacs_area = QPainterPath()
+            emacs_area.addRect(QRectF(emacs_x, emacs_y, emacs_width, emacs_height))
 
-                emacs_area = QPainterPath()
-                emacs_area.addRect(QRectF(emacs_x, emacs_y, emacs_width, emacs_height))
+            if menu_info:
+                total_mask = None
 
-                if menu_info:
-                    total_mask = None
+                for info in menu_info:
+                    try:
+                        (x, y, w, h) = info
+                        mask = QPainterPath()
+                        mask.addRect(int(x), int(y), int(w), int(h))
 
-                    for info in menu_info:
-                        try:
-                            (x, y, w, h) = info
-                            mask = QPainterPath()
-                            mask.addRect(int(x), int(y), int(w), int(h))
+                        if total_mask is None:
+                            total_mask = mask
+                        else:
+                            total_mask += mask
+                    except:
+                        pass
 
-                            if total_mask is None:
-                                total_mask = mask
-                            else:
-                                total_mask += mask
-                        except:
-                            pass
-
-                    if total_mask is not None:
-                        painter.setClipPath(emacs_area - total_mask, Qt.ClipOperation.IntersectClip)
+                if total_mask is not None:
+                    painter.setClipPath(emacs_area - total_mask, Qt.ClipOperation.IntersectClip)
 
             if len(window_info) == 1:
                 # Draw 1 pixel mode-line when only
