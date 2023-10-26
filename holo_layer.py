@@ -276,9 +276,10 @@ class HoloWindow(QWidget):
         painter.setPen(background_color)
 
         if self.emacs_frame_info:
-            painter.drawRect(*self.emacs_frame_info)
+            [x, y, w, h] = self.emacs_frame_info
+            painter.eraseRect(x, y, w, h)
         else:
-            painter.drawRect(self.rect())
+            painter.eraseRect(self.rect())
 
         self.sort_tab.draw(painter, self.emacs_frame_info, self.sort_tab_info)
 
