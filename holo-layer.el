@@ -411,12 +411,15 @@ Such as, wayland native, macOS etc."
   (cond ((string-equal (getenv "XDG_CURRENT_DESKTOP") "sway")
          (holo-layer--split-number (shell-command-to-string (concat holo-layer-build-dir "swaymsg-treefetch/swaymsg-rectfetcher.sh emacs"))))
         ((string-equal (getenv "XDG_CURRENT_DESKTOP") "Hyprland")
-         (let ((clients (json-parse-string (shell-command-to-string "hyprctl -j clients")))
-               (coordinate))
-           (dotimes (i (length clients))
-             (when (equal (gethash "pid" (aref clients i)) (emacs-pid))
-               (setq coordinate (gethash "at" (aref clients i)))))
-           (list (aref coordinate 0) (aref coordinate 1))))
+         (let ((frame-coordinate (json-parse-string (shell-command-to-string 
+                 (concat "hyprctl -j clients | jq '.[] | select(.pid == " 
+                 (number-to-string (emacs-pid))
+                 ") | .at'"))))
+              (monitor-coordinate (json-parse-string (shell-command-to-string 
+                  "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'"))))
+              (list
+               (- (aref frame-coordinate 0) (aref monitor-coordinate 0))
+               (- (aref frame-coordinate 1) (aref monitor-coordinate 1)))))
         ((holo-layer-emacs-running-in-wayland-native)
          (require 'dbus)
          (let* ((coordinate (holo-layer--split-number
