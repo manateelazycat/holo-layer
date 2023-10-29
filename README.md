@@ -59,6 +59,15 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 * holo-layer-sort-tab-ui: Whether to show sort-tab ui, default is nil, need install [sort-tab](https://github.com/manateelazycat/sort-tab) first
 * holo-layer-sort-tab-font-size: The font size of sort-tab 
 
+## Hyprland
+Add the following configuration when using Hyprland:
+
+```
+windowrulev2 = float,title:(holo_layer.py)
+windowrulev2 = nofocus,title:(holo_layer.py)
+windowrulev2 = noblur,title:(holo_layer.py)
+```
+
 ## Feedback Issues
 
 For other issues, please use the command `emacs -q` and only add holo-layer configuration for a comparison test. If `emacs -q` can work normally, please check your personal configuration file.

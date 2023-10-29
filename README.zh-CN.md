@@ -59,6 +59,14 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 * holo-layer-sort-tab-ui: 是否渲染现代标签栏， 默认是 nil, 需要先安装 [sort-tab](https://github.com/manateelazycat/sort-tab)
 * holo-layer-sort-tab-font-size: 标签栏的文字大小
 
+## Hyprland
+使用 Hyprland 请添加如下配置: 
+
+```
+windowrulev2 = float,title:(holo_layer.py)
+windowrulev2 = nofocus,title:(holo_layer.py)
+windowrulev2 = noblur,title:(holo_layer.py)
+```
 
 ## 反馈问题
 
