@@ -411,15 +411,15 @@ Such as, wayland native, macOS etc."
   (cond ((string-equal (getenv "XDG_CURRENT_DESKTOP") "sway")
          (holo-layer--split-number (shell-command-to-string (concat holo-layer-build-dir "swaymsg-treefetch/swaymsg-rectfetcher.sh emacs"))))
         ((string-equal (getenv "XDG_CURRENT_DESKTOP") "Hyprland")
-         (let ((frame-coordinate (json-parse-string (shell-command-to-string 
+         (let* ((frame-coordinate (json-parse-string (shell-command-to-string 
                  (concat "hyprctl -j clients | jq '.[] | select(.pid == " 
                  (number-to-string (emacs-pid))
                  ") | .at'"))))
-              (monitor-coordinate (json-parse-string (shell-command-to-string 
-                  "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'"))))
-              (list
-               (- (aref frame-coordinate 0) (aref monitor-coordinate 0))
-               (- (aref frame-coordinate 1) (aref monitor-coordinate 1)))))
+                (monitor-coordinate (json-parse-string (shell-command-to-string 
+                  "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'")))
+								(frame-x (- (aref frame-coordinate 0) (aref monitor-coordinate 0)))
+								(frame-y (- (aref frame-coordinate 1) (aref monitor-coordinate 1))))
+           (list frame-x frame-y)))
         ((holo-layer-emacs-running-in-wayland-native)
          (require 'dbus)
          (let* ((coordinate (holo-layer--split-number
@@ -430,7 +430,7 @@ Such as, wayland native, macOS etc."
                 (frame-y (truncate (/ (cadr coordinate) (frame-scale-factor)))))
            (list frame-x frame-y)))
         (t
-         (list 0 0))))
+         (list (car (frame-position)) (cdar (frame-position))))))
 
 (defun holo-layer-get-window-allocation (&optional window)
   "Get WINDOW allocation."
@@ -470,7 +470,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                 (string-equal (buffer-name (window-buffer window)) sort-tab-buffer-name)))))
 
 (defun holo-layer-get-emacs-frame-info ()
-  (let ((pos (frame-position))
+  (let ((pos (holo-layer--get-frame-coordinate))
         (width (frame-pixel-width))
         (height (frame-pixel-height))
         (external-border-size (cdr (nth 2 (frame-geometry))))
@@ -478,7 +478,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                             (alist-get 'title-bar-size (frame-geometry))
                             (cons 0 0))))
     (list (+ (car pos) (car external-border-size) (if (memq system-type '(cygwin windows-nt ms-dos)) 0 (car title-bar-size)))
-          (+ (cdr pos) (cdr external-border-size) (cdr title-bar-size))
+          (+ (cadr pos) (cdr external-border-size) (cdr title-bar-size))
           width
           height)))
 
@@ -676,16 +676,13 @@ Including title-bar, menu-bar, offset depends on window system, and border."
            (window-divider-right-padding (if window-divider-mode window-divider-default-right-width 0))
            (window-divider-bottom-padding (if window-divider-mode window-divider-default-bottom-width 0))
            (titlebar-height (holo-layer--get-titlebar-height))
-           (frame-coordinate (holo-layer--get-frame-coordinate))
-           (frame-x (car frame-coordinate))
-           (frame-y (cadr frame-coordinate))
            (x (nth 0 window-allocation))
            (y (nth 1 window-allocation))
            (w (nth 2 window-allocation))
            (h (nth 3 window-allocation)))
       (format "%s:%s:%s:%s:%s"
-              (+ x frame-x)
-              (+ y titlebar-height frame-y)
+              x
+              (+ y titlebar-height )
               (- w window-divider-right-padding)
               (- h window-divider-bottom-padding)
               (equal window current-window)))))
