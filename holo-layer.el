@@ -417,8 +417,8 @@ Such as, wayland native, macOS etc."
                  ") | .at'"))))
                 (monitor-coordinate (json-parse-string (shell-command-to-string 
                   "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'")))
-								(frame-x (- (aref frame-coordinate 0) (aref monitor-coordinate 0)))
-								(frame-y (- (aref frame-coordinate 1) (aref monitor-coordinate 1))))
+                (frame-x (- (aref frame-coordinate 0) (aref monitor-coordinate 0)))
+                (frame-y (- (aref frame-coordinate 1) (aref monitor-coordinate 1))))
            (list frame-x frame-y)))
         ((holo-layer-emacs-running-in-wayland-native)
          (require 'dbus)
@@ -430,7 +430,7 @@ Such as, wayland native, macOS etc."
                 (frame-y (truncate (/ (cadr coordinate) (frame-scale-factor)))))
            (list frame-x frame-y)))
         (t
-         (list (car (frame-position)) (cdar (frame-position))))))
+         (list (car (frame-position)) (cdr (frame-position))))))
 
 (defun holo-layer-get-window-allocation (&optional window)
   "Get WINDOW allocation."
