@@ -114,7 +114,7 @@ class SortTab(QObject):
 
                 # Translate tab line along with scroll position.
                 current_tab_index = sort_tab_info["current_tab_index"]
-                current_tab_x_offset = 0
+                current_tab_x_offset = x
                 for index, tab_name in enumerate(tab_names):
                     # Calculate tab width and icon offset.
                     tab_render_name = self.get_tab_render_name(tab_name)
@@ -146,7 +146,7 @@ class SortTab(QObject):
                     current_tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
 
                 # Draw tabs.
-                tab_x_offset = 0
+                tab_x_offset = x
                 for index, tab_name in enumerate(tab_names):
                     # Get tab width and icon offset.
                     tab_render_name = self.get_tab_render_name(tab_name)
@@ -188,7 +188,7 @@ class SortTab(QObject):
                     tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
 
                 # Draw tab spliter, we can't draw tab spliter along with tab content, otherwhere tab spliter will override by next tab content.
-                tab_x_offset = 0
+                tab_x_offset = x
                 for index, tab_name in enumerate(tab_names):
                     # Get tab width and icon offset.
                     tab_render_name = self.get_tab_render_name(tab_name)
