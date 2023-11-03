@@ -412,11 +412,11 @@ Such as, wayland native, macOS etc."
          (holo-layer--split-number (shell-command-to-string (concat holo-layer-build-dir "swaymsg-treefetch/swaymsg-rectfetcher.sh emacs"))))
         ((string-equal (getenv "XDG_CURRENT_DESKTOP") "Hyprland")
          (let* ((frame-coordinate (json-parse-string (shell-command-to-string 
-                 (concat "hyprctl -j clients | jq '.[] | select(.pid == " 
-                 (number-to-string (emacs-pid))
-                 ") | .at'"))))
+                                                      (concat "hyprctl -j clients | jq '.[] | select(.pid == "
+                                                              (number-to-string (emacs-pid))
+                                                              ") | .at'"))))
                 (monitor-coordinate (json-parse-string (shell-command-to-string 
-                  "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'")))
+                                                        "hyprctl monitors -j | jq '.[] | select(.focused == true) | [.x,.y]'")))
                 (frame-x (- (aref frame-coordinate 0) (aref monitor-coordinate 0)))
                 (frame-y (- (aref frame-coordinate 1) (aref monitor-coordinate 1))))
            (list frame-x frame-y)))
@@ -663,7 +663,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                (if-let ((glyph (when (< p (point-max))
                                  (aref (font-get-glyphs (font-at p) p (1+ p)) 0))))
                    (aref glyph 4)
-                 (window-font-width))))
+                 (frame-char-width))))
           (h (line-pixel-height)))
       (when (and (> y (- (+ window-y window-h) h)) (equal holo-layer-last-window (selected-window)))
         (setq y (- (+ window-y window-h) h)))
