@@ -61,7 +61,7 @@ class SortTab(QObject):
         painter.save()
 
         # Draw tab line background.
-        if "emacs_theme_mode" in sort_tab_info and emacs_frame_info:
+        if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
             # Get emacs theme colors.
             theme_mode = sort_tab_info["emacs_theme_mode"]
             theme_foreground_color = sort_tab_info["emacs_theme_foreground_color"]
