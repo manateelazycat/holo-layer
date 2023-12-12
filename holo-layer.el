@@ -592,33 +592,58 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-cursor-is-block-command-p ()
   (member (format "%s" this-command) holo-layer-cursor-block-commands))
 
-(defun holo-layer-get-menu-info ()
-  (let ((info ""))
-    (when (featurep 'lsp-bridge)
-      (when (and (frame-live-p acm-menu-frame)
-                 (frame-visible-p acm-menu-frame))
-        (let* ((acm-menu-frame-pos (frame-position acm-menu-frame))
-               (acm-menu-frame-info (format "%s:%s:%s:%s"
-                                            (car acm-menu-frame-pos)
-                                            (cdr acm-menu-frame-pos)
-                                            (frame-outer-width acm-menu-frame)
-                                            (frame-outer-height acm-menu-frame)
-                                            )))
-          (setq info acm-menu-frame-info)))
-      (when (and (frame-live-p acm-doc-frame)
-                 (frame-visible-p acm-doc-frame))
-        (let* ((acm-doc-frame-pos (frame-position acm-doc-frame))
-               (acm-doc-frame-info (format "%s:%s:%s:%s"
-                                           (car acm-doc-frame-pos)
-                                           (cdr acm-doc-frame-pos)
-                                           (frame-outer-width acm-doc-frame)
-                                           (frame-outer-height acm-doc-frame)
-                                           )))
-          (if (string-equal info "")
-              (setq info acm-doc-frame-info)
-            (setq info (format "%s,%s" info acm-doc-frame-info)))
-          ))
+(defun holo-layer-get-rime-frame-info ()
+  (when (and (featurep 'rime)
+             (equal rime-show-candidate 'posframe))
+    (let ((buffer-list-update-hook nil))
+      (cl-dolist (frame (frame-list))
+        (let ((buffer-info (frame-parameter frame 'posframe-buffer)))
+          (when (or (equal rime-posframe-buffer (car buffer-info))
+                    (equal rime-posframe-buffer (cdr buffer-info)))
+            (when (and (frame-live-p frame)
+                       (frame-visible-p frame))
+              (cl-return
+               (format "%s:%s:%s:%s"
+                       (car (frame-position frame))
+                       (cdr (frame-position frame))
+                       (frame-outer-width frame)
+                       (frame-outer-height frame))))
+            ))))))
 
+(defun holo-layer-get-acm-frame-info ()
+  (when (and (frame-live-p acm-menu-frame)
+             (frame-visible-p acm-menu-frame))
+    (let* ((acm-menu-frame-pos (frame-position acm-menu-frame))
+           (acm-menu-frame-info (format "%s:%s:%s:%s"
+                                        (car acm-menu-frame-pos)
+                                        (cdr acm-menu-frame-pos)
+                                        (frame-outer-width acm-menu-frame)
+                                        (frame-outer-height acm-menu-frame)
+                                        )))
+      acm-menu-frame-info
+      )))
+
+(defun holo-layer-get-acm-doc-frame-info ()
+  (when (and (frame-live-p acm-doc-frame)
+             (frame-visible-p acm-doc-frame))
+    (let* ((acm-doc-frame-pos (frame-position acm-doc-frame))
+           (acm-doc-frame-info (format "%s:%s:%s:%s"
+                                       (car acm-doc-frame-pos)
+                                       (cdr acm-doc-frame-pos)
+                                       (frame-outer-width acm-doc-frame)
+                                       (frame-outer-height acm-doc-frame)
+                                       )))
+      acm-doc-frame-info
+      )))
+
+
+(defun holo-layer-get-menu-info ()
+  (ignore-errors
+    (let* ((acm-frame-info (holo-layer-get-acm-frame-info))
+           (acm-doc-frame-info (holo-layer-get-acm-doc-frame-info))
+           (rime-frame-info (holo-layer-get-rime-frame-info))
+           (info (mapconcat 'identity (delq nil (list acm-frame-info acm-doc-frame-info rime-frame-info)) ","))
+           )
       info
       )))
 
