@@ -849,6 +849,24 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                            (holo-layer-get-theme-background-color)
                            )))
 
+(defun holo-layer-get-indent-infos ()
+  (save-window-excursion
+    (save-excursion
+      (let (indent-infos)
+        (dolist (window (window-list))
+          (select-window window t)
+          (when (derived-mode-p 'prog-mode)
+            (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
+                  indent-offsets)
+              (goto-char (window-start))
+              (while (not (equal (line-number-at-pos (point))
+                                 (line-number-at-pos (window-end))))
+                (back-to-indentation)
+                (setq indent-offsets (append indent-offsets (list (current-column))))
+                (forward-line))
+              (setq indent-infos (append indent-infos (list (format "%s_%s" window-info (mapconcat #'number-to-string indent-offsets ","))))))))
+        (message "**** %s %s %s" (frame-char-width) (frame-char-height) (mapconcat #'identity indent-infos "|"))))))
+
 (provide 'holo-layer)
 
 ;;; holo-layer.el ends here
