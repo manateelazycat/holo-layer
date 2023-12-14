@@ -26,16 +26,15 @@ import threading
 from epc.server import ThreadingEPCServer
 from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
+from plugin.sort_tab import SortTab
 from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
-from plugin.sort_tab import SortTab
 from pynput.keyboard import Listener as kbListener
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QGuiApplication, QPainter
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtGui import QColor, QGuiApplication, QPainter, QPainterPath
 from PyQt6.QtWidgets import QApplication, QWidget
 from utils import *
-
 
 class HoloLayer:
     def __init__(self, args):
@@ -287,12 +286,40 @@ class HoloWindow(QWidget):
         painter.setBrush(background_color)
         painter.setPen(background_color)
 
-        self.window_border.draw(painter, self.window_info, self.emacs_frame_info, self.menu_info)
+        self.update_menu_clip_area(painter)
+
+        self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
+
+    def update_menu_clip_area(self, painter):
+        if self.emacs_frame_info:
+            [emacs_x, emacs_y, emacs_width, emacs_height] = self.emacs_frame_info
+
+            emacs_area = QPainterPath()
+            emacs_area.addRect(QRectF(emacs_x, emacs_y, emacs_width, emacs_height))
+
+            if self.menu_info:
+                total_mask = None
+
+                for info in self.menu_info:
+                    try:
+                        (x, y, w, h) = info
+                        mask = QPainterPath()
+                        mask.addRect(int(x), int(y), int(w), int(h))
+
+                        if total_mask is None:
+                            total_mask = mask
+                        else:
+                            total_mask += mask
+                    except:
+                        pass
+
+                if total_mask is not None:
+                    painter.setClipPath(emacs_area - total_mask, Qt.ClipOperation.IntersectClip)
 
     def update_place_info(self, word):
         word = word.lower()
