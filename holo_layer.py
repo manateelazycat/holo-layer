@@ -356,12 +356,12 @@ class HoloWindow(QWidget):
                            max(cur_indents) > indent_level and sum(cur_indents) > 0:
                             # TODO cache draw states
                             painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
-                                             x + indent_level * cursor_w, y + cursor_h * index)
+                                             x + indent_level * cursor_w, y + min(h, cursor_h * index))
                         last_index = index
 
                     if last_index < len(indents) - 1:
                         painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
-                                         x + indent_level * cursor_w, y + cursor_h * len(indents))
+                                         x + indent_level * cursor_w, y + min(h, cursor_h * len(indents)))
 
 
 

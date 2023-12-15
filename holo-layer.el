@@ -643,26 +643,16 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       acm-doc-frame-info
       )))
 
-(defun holo-layer-get-minibuffer-info ()
-  (let* ((minibuffer-window (minibuffer-window))
-         (edges (window-pixel-edges minibuffer-window))
-         (x (nth 0 edges))
-         (y (nth 1 edges))
-         (width (- (nth 2 edges) x))
-         (height (- (nth 3 edges) y)))
-    (format "%s:%s:%s:%s" x y width height)))
-
 (defun holo-layer-get-menu-info ()
   (ignore-errors
     (let* ((acm-frame-info (holo-layer-get-acm-frame-info))
            (acm-doc-frame-info (holo-layer-get-acm-doc-frame-info))
            (rime-frame-info (holo-layer-get-rime-frame-info))
-           (minibuffer-info (holo-layer-get-minibuffer-info))
            (info (mapconcat 'identity (delq nil (list
                                                  acm-frame-info
                                                  acm-doc-frame-info
                                                  rime-frame-info
-                                                 minibuffer-info)) ","))
+                                                 )) ","))
            )
       info
       )))
