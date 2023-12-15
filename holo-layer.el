@@ -762,8 +762,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (when holo-layer-enable-indent-rainbow
     (add-hook 'post-command-hook #'holo-layer-indent-change)
-    (add-hook 'window-scroll-functions #'holo-layer-indent-change)
-    )
+    (add-hook 'window-configuration-change-hook #'holo-layer-indent-change)
+    (add-hook 'window-scroll-functions #'holo-layer-indent-change))
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
@@ -793,8 +793,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (when holo-layer-enable-indent-rainbow
     (remove-hook 'post-command-hook #'holo-layer-indent-change)
-    (remove-hook 'window-scroll-functions #'holo-layer-indent-change)
-    )
+    (remove-hook 'window-configuration-change-hook #'holo-layer-indent-change)
+    (remove-hook 'window-scroll-functions #'holo-layer-indent-change))
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
