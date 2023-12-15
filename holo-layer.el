@@ -885,33 +885,33 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (when (and (boundp 'holo-layer-emacs-frame)
                    holo-layer-emacs-frame)
           (dolist (window (window-list))
-            (with-current-buffer (window-buffer window)
-              (when (derived-mode-p 'prog-mode)
-                (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
-                      (repeat-times 0)
-                      current-line
-                      indent-offsets)
-                  (goto-char (window-start))
-                  ;; using cursor info at first point to detect bias of x y
-                  (setq window-start-cursor-info (holo-layer-get-cursor-info))
-                  (while (and (not (equal (line-number-at-pos (point))
-                                          (line-number-at-pos (window-end))))
-                              (< repeat-times 3))
-                    (setq current-line (line-number-at-pos (point)))
+            (select-window window)
+            (when (derived-mode-p 'prog-mode)
+              (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
+                    (repeat-times 0)
+                    current-line
+                    indent-offsets)
+                (goto-char (window-start))
+                ;; using cursor info at first point to detect bias of x y
+                (setq window-start-cursor-info (holo-layer-get-cursor-info))
+                (while (and (not (equal (line-number-at-pos (point))
+                                        (line-number-at-pos (window-end))))
+                            (< repeat-times 3))
+                  (setq current-line (line-number-at-pos (point)))
 
-                    (back-to-indentation)
-                    (if (and (eq (current-column) 0)
-                             (eq (point-at-eol) (point)))
-                        ;; using -1 to mark empty line
-                        (setq indent-offsets (append indent-offsets (list -1)))
-                      (setq indent-offsets (append indent-offsets (list (current-column)))))
-                    (forward-line)
+                  (back-to-indentation)
+                  (if (and (eq (current-column) 0)
+                           (eq (point-at-eol) (point)))
+                      ;; using -1 to mark empty line
+                      (setq indent-offsets (append indent-offsets (list -1)))
+                    (setq indent-offsets (append indent-offsets (list (current-column)))))
+                  (forward-line)
 
-                    (when (equal current-line (line-number-at-pos (point)))
-                      (setq repeat-times (+ repeat-times 1))))
-                  (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
-                                                                        window-start-cursor-info
-                                                                        (mapconcat #'number-to-string indent-offsets ","))))))))
+                  (when (equal current-line (line-number-at-pos (point)))
+                    (setq repeat-times (+ repeat-times 1))))
+                (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
+                                                                      window-start-cursor-info
+                                                                      (mapconcat #'number-to-string indent-offsets ",")))))))
             ))
         indent-infos
         ))))
