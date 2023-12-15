@@ -907,7 +907,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                 (setq window-start-cursor-info (holo-layer-get-cursor-info))
                 (while (and (not (equal (line-number-at-pos (point))
                                         (line-number-at-pos (window-end))))
-                            (< repeat-times 3))
+                            (< repeat-times 1))
                   (setq current-line (line-number-at-pos (point)))
 
                   (back-to-indentation)
@@ -920,6 +920,10 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
                   (when (equal current-line (line-number-at-pos (point)))
                     (setq repeat-times (+ repeat-times 1))))
+
+                (when (>= repeat-times 1)
+                  (setq indent-offsets (butlast indent-offsets)))
+
                 (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
                                                                       window-start-cursor-info
                                                                       (mapconcat #'number-to-string indent-offsets ",")))))))
