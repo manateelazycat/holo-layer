@@ -899,30 +899,26 @@ Including title-bar, menu-bar, offset depends on window system, and border."
             (select-window window t)
             (when (derived-mode-p 'prog-mode)
               (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
-                    (repeat-times 0)
                     current-line
+                    current-line-indent-offset
                     indent-offsets)
+                ;; Jump to window start.
                 (goto-char (window-start))
-                ;; using cursor info at first point to detect bias of x y
+
+                ;; Using cursor info at first point to detect bias of x y
                 (setq window-start-cursor-info (holo-layer-get-cursor-info))
-                (while (and (not (equal (line-number-at-pos (point))
-                                        (line-number-at-pos (window-end))))
-                            (< repeat-times 1))
-                  (setq current-line (line-number-at-pos (point)))
 
-                  (back-to-indentation)
-                  (if (and (eq (current-column) 0)
-                           (eq (point-at-eol) (point)))
-                      ;; using -1 to mark empty line
-                      (setq indent-offsets (append indent-offsets (list -1)))
-                    (setq indent-offsets (append indent-offsets (list (current-column)))))
-                  (forward-line)
+                (catch 'stop
+                  (while (and (not (= (line-number-at-pos (point))
+                                      (line-number-at-pos (window-end)))))
+                    (setq current-line (line-number-at-pos (point)))
+                    (setq current-line-indent-offset (holo-layer-get-line-indent-offset))
 
-                  (when (equal current-line (line-number-at-pos (point)))
-                    (setq repeat-times (+ repeat-times 1))))
+                    (forward-line)
 
-                (when (>= repeat-times 1)
-                  (setq indent-offsets (butlast indent-offsets)))
+                    (if (equal current-line (line-number-at-pos (point)))
+                        (throw 'stop nil)
+                      (setq indent-offsets (append indent-offsets (list current-line-indent-offset))))))
 
                 (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
                                                                       window-start-cursor-info
@@ -930,6 +926,13 @@ Including title-bar, menu-bar, offset depends on window system, and border."
             ))
         indent-infos
         ))))
+
+(defun holo-layer-get-line-indent-offset ()
+  (back-to-indentation)
+  (if (and (= (current-column) 0)
+           (= (point-at-eol) (point)))
+      -1
+    (current-column)))
 
 (provide 'holo-layer)
 
