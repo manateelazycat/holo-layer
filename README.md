@@ -29,10 +29,11 @@ Note:
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
-### Indent Rainbow indentation assistance line
+### Indent Rainbow
 <p align="center">
-  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/ident-line.png">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/indent-line.png">
 </p>
+
 ### Modern Tab Line
 <p align="center">
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
@@ -46,6 +47,7 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 
 ## Options
 * holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
+* holo-layer-enable-indent-rainbow: Whehter to enable indent rainbow, it is off by default
 * holo-layer-enable-place-info: Display information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, it is off by default
 * holo-layer-enable-window-border: Display window border, it is off by default
 * holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is off by default

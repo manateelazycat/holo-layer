@@ -221,7 +221,7 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "Show background for window number more clarity if enable this option."
   :type 'boolean)
 
-(defcustom holo-layer-enable-indent-info nil
+(defcustom holo-layer-enable-indent-rainbow nil
   "Show window border if enable this option."
   :type 'boolean)
 
@@ -760,7 +760,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
 
-  (when holo-layer-enable-indent-info
+  (when holo-layer-enable-indent-rainbow
     (add-hook 'post-command-hook #'holo-layer-indent-change)
     (add-hook 'window-scroll-functions #'holo-layer-indent-change)
     )
@@ -791,7 +791,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
 
-  (when holo-layer-enable-indent-info
+  (when holo-layer-enable-indent-rainbow
     (remove-hook 'post-command-hook #'holo-layer-indent-change)
     (remove-hook 'window-scroll-functions #'holo-layer-indent-change)
     )
