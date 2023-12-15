@@ -866,26 +866,29 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (save-window-excursion
     (save-excursion
       (let (indent-infos window-start-cursor-info)
-        (dolist (window (window-list))
-          (select-window window t)
-          (when (derived-mode-p 'prog-mode)
-            (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
-                  indent-offsets)
-              (goto-char (window-start))
-              ;; using cursor info at first point to detect bias of x y
-              (setq window-start-cursor-info (holo-layer-get-cursor-info))
-              (while (not (equal (line-number-at-pos (point))
-                                 (line-number-at-pos (window-end))))
-                (back-to-indentation)
-                (if (and (eq (current-column) 0)
-                         (eq (point-at-eol) (point)))
-                    ;; using -1 to mark empty line
-                    (setq indent-offsets (append indent-offsets (list -1)))
-                  (setq indent-offsets (append indent-offsets (list (current-column)))))
-                (forward-line))
-              (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
-                                                                    window-start-cursor-info
-                                                                    (mapconcat #'number-to-string indent-offsets ","))))))))
+        (when (and
+               (boundp 'holo-layer-emacs-frame)
+               holo-layer-emacs-frame)
+          (dolist (window (window-list))
+           (select-window window t)
+           (when (derived-mode-p 'prog-mode)
+             (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
+                   indent-offsets)
+               (goto-char (window-start))
+               ;; using cursor info at first point to detect bias of x y
+               (setq window-start-cursor-info (holo-layer-get-cursor-info))
+               (while (not (equal (line-number-at-pos (point))
+                                  (line-number-at-pos (window-end))))
+                 (back-to-indentation)
+                 (if (and (eq (current-column) 0)
+                          (eq (point-at-eol) (point)))
+                     ;; using -1 to mark empty line
+                     (setq indent-offsets (append indent-offsets (list -1)))
+                   (setq indent-offsets (append indent-offsets (list (current-column)))))
+                 (forward-line))
+               (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
+                                                                     window-start-cursor-info
+                                                                     (mapconcat #'number-to-string indent-offsets ",")))))))))
         indent-infos
         ))))
 
