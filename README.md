@@ -29,6 +29,10 @@ Note:
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
+### Indent Rainbow indentation assistance line
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/ident-line.png">
+</p>
 ### Modern Tab Line
 <p align="center">
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
