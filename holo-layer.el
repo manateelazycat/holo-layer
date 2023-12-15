@@ -895,7 +895,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (when (and (boundp 'holo-layer-emacs-frame)
                    holo-layer-emacs-frame)
           (dolist (window (window-list))
-            (select-window window)
+            ;; Note, we need add `NORECORD' argument for `select-window' to avoid flash sort-tab line.
+            (select-window window t)
             (when (derived-mode-p 'prog-mode)
               (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
                     (repeat-times 0)
