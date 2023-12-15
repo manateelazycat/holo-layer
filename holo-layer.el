@@ -643,12 +643,26 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       acm-doc-frame-info
       )))
 
+(defun holo-layer-get-minibuffer-info ()
+  (let* ((minibuffer-window (minibuffer-window))
+         (edges (window-pixel-edges minibuffer-window))
+         (x (nth 0 edges))
+         (y (nth 1 edges))
+         (width (- (nth 2 edges) x))
+         (height (- (nth 3 edges) y)))
+    (format "%s:%s:%s:%s" x y width height)))
+
 (defun holo-layer-get-menu-info ()
   (ignore-errors
     (let* ((acm-frame-info (holo-layer-get-acm-frame-info))
            (acm-doc-frame-info (holo-layer-get-acm-doc-frame-info))
            (rime-frame-info (holo-layer-get-rime-frame-info))
-           (info (mapconcat 'identity (delq nil (list acm-frame-info acm-doc-frame-info rime-frame-info)) ","))
+           (minibuffer-info (holo-layer-get-minibuffer-info))
+           (info (mapconcat 'identity (delq nil (list
+                                                 acm-frame-info
+                                                 acm-doc-frame-info
+                                                 rime-frame-info
+                                                 minibuffer-info)) ","))
            )
       info
       )))
@@ -870,25 +884,25 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                (boundp 'holo-layer-emacs-frame)
                holo-layer-emacs-frame)
           (dolist (window (window-list))
-           (select-window window t)
-           (when (derived-mode-p 'prog-mode)
-             (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
-                   indent-offsets)
-               (goto-char (window-start))
-               ;; using cursor info at first point to detect bias of x y
-               (setq window-start-cursor-info (holo-layer-get-cursor-info))
-               (while (not (equal (line-number-at-pos (point))
-                                  (line-number-at-pos (window-end))))
-                 (back-to-indentation)
-                 (if (and (eq (current-column) 0)
-                          (eq (point-at-eol) (point)))
-                     ;; using -1 to mark empty line
-                     (setq indent-offsets (append indent-offsets (list -1)))
-                   (setq indent-offsets (append indent-offsets (list (current-column)))))
-                 (forward-line))
-               (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
-                                                                     window-start-cursor-info
-                                                                     (mapconcat #'number-to-string indent-offsets ",")))))))))
+            (select-window window t)
+            (when (derived-mode-p 'prog-mode)
+              (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
+                    indent-offsets)
+                (goto-char (window-start))
+                ;; using cursor info at first point to detect bias of x y
+                (setq window-start-cursor-info (holo-layer-get-cursor-info))
+                (while (not (equal (line-number-at-pos (point))
+                                   (line-number-at-pos (window-end))))
+                  (back-to-indentation)
+                  (if (and (eq (current-column) 0)
+                           (eq (point-at-eol) (point)))
+                      ;; using -1 to mark empty line
+                      (setq indent-offsets (append indent-offsets (list -1)))
+                    (setq indent-offsets (append indent-offsets (list (current-column)))))
+                  (forward-line))
+                (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
+                                                                      window-start-cursor-info
+                                                                      (mapconcat #'number-to-string indent-offsets ",")))))))))
         indent-infos
         ))))
 
