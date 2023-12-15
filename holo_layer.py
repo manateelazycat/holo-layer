@@ -323,6 +323,9 @@ class HoloWindow(QWidget):
                 x = cursor_x
                 y = cursor_y
 
+                # Add some offset make sure indent at right of indent char.
+                x += 5
+
                 ava_indents = sorted(set(indents))
                 if ava_indents[0] == 0:
                     del ava_indents[0]
@@ -331,7 +334,7 @@ class HoloWindow(QWidget):
                 # TODO get indent level from emacs
                 # and skip indent that not multiple of index level
                 for ci, indent_level in enumerate(ava_indents):
-                    if indent_level % 4 != 0:
+                    if indent_level % 2 != 0:
                         del_index.append(ci)
                 for index in sorted(del_index, reverse=True):
                     del ava_indents[index]
@@ -339,6 +342,10 @@ class HoloWindow(QWidget):
                 # first sort available indents by indent level
                 # add indent line according to indent level
                 for ci, indent_level in enumerate(ava_indents):
+                    # Don't draw first indent line at column 0.
+                    if ci == 0 and indent_level == 0:
+                        continue
+
                     painter.setPen(self.rainbow_indent_colors[ci % len(self.rainbow_indent_colors)])
                     last_index = -1
                     for index, indent in enumerate(indents):
@@ -351,9 +358,10 @@ class HoloWindow(QWidget):
                             painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
                                              x + indent_level * cursor_w, y + cursor_h * index)
                         last_index = index
+
                     if last_index < len(indents) - 1:
                         painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
-                                        x + indent_level * cursor_w, y + cursor_h * len(indents))
+                                         x + indent_level * cursor_w, y + cursor_h * len(indents))
 
 
 
