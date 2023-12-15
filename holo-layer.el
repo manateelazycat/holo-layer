@@ -895,34 +895,35 @@ Including title-bar, menu-bar, offset depends on window system, and border."
         (when (and (boundp 'holo-layer-emacs-frame)
                    holo-layer-emacs-frame)
           (dolist (window (window-list))
-            ;; Note, we need add `NORECORD' argument for `select-window' to avoid flash sort-tab line.
-            (select-window window t)
-            (when (derived-mode-p 'prog-mode)
-              (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
-                    current-line
-                    current-line-indent-offset
-                    indent-offsets)
-                ;; Jump to window start.
-                (goto-char (window-start))
+            (with-selected-window window
+              (when (derived-mode-p 'prog-mode)
+                (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
+                      current-line
+                      current-line-indent-offset
+                      indent-offsets)
+                  ;; Jump to window start.
+                  (goto-char (window-start))
 
-                ;; Using cursor info at first point to detect bias of x y
-                (setq window-start-cursor-info (holo-layer-get-cursor-info))
+                  ;; Using cursor info at first point to detect bias of x y
+                  (setq window-start-cursor-info (holo-layer-get-cursor-info))
 
-                (catch 'stop
-                  (while (and (not (= (line-number-at-pos (point))
-                                      (line-number-at-pos (window-end)))))
-                    (setq current-line (line-number-at-pos (point)))
-                    (setq current-line-indent-offset (holo-layer-get-line-indent-offset))
+                  (catch 'stop
+                    (while (and (not (= (line-number-at-pos (point))
+                                        (line-number-at-pos (window-end)))))
+                      (setq current-line (line-number-at-pos (point)))
+                      (setq current-line-indent-offset (holo-layer-get-line-indent-offset))
 
-                    (forward-line)
+                      (forward-line)
 
-                    (if (equal current-line (line-number-at-pos (point)))
-                        (throw 'stop nil)
-                      (setq indent-offsets (append indent-offsets (list current-line-indent-offset))))))
+                      (if (equal current-line (line-number-at-pos (point)))
+                          (throw 'stop nil)
+                        (setq indent-offsets (append indent-offsets (list current-line-indent-offset))))))
 
-                (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
-                                                                      window-start-cursor-info
-                                                                      (mapconcat #'number-to-string indent-offsets ",")))))))
+                  (setq indent-infos (append indent-infos
+                                             (list (format "%s_%s_%s"
+                                                           window-info
+                                                           window-start-cursor-info
+                                                           (mapconcat #'number-to-string indent-offsets ","))))))))
             ))
         indent-infos
         ))))
