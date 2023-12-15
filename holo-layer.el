@@ -246,6 +246,12 @@ Default is disable.")
   "Sort tab font size."
   :type 'integer)
 
+(defcustom holo-layer-indent-colors '("#F8FE29" "#C8F424" "#5BAB3C" "#4B713F" "#244E30"
+                                      "#F8D991" "#F6B080" "#F58B60" "#E1664C" "#774C3E"
+                                      "#F7D967" "#3DB3D0" "#C24347" "#AA5A9C" "#1E588D")
+  "Colors for indent line."
+  :type 'list)
+
 (defconst holo-layer--w32-frame-p (eq (framep-on-display) 'w32))
 
 (defun holo-layer--user-emacs-directory ()

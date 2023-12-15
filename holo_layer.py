@@ -249,10 +249,7 @@ class HoloWindow(QWidget):
         self.screen_geometry = self.screen.availableGeometry()
         self.setGeometry(self.screen_geometry)
 
-
-        # TODO adjust color according to theme
-        self.rainbow_indent_colors = [Qt.GlobalColor.red, Qt.GlobalColor.yellow, Qt.GlobalColor.green,
-                                      Qt.GlobalColor.cyan, Qt.GlobalColor.blue, Qt.GlobalColor.magenta]
+        self.rainbow_indent_colors = list(map(lambda x: QColor(x), get_emacs_var("holo-layer-indent-colors")))
 
         self.show_up()
 
