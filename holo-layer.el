@@ -761,7 +761,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
 
   (when holo-layer-enable-indent-info
-    (add-hook 'post-command-hook #'holo-layer-indent-change))
+    (add-hook 'post-command-hook #'holo-layer-indent-change)
+    (add-hook 'window-scroll-functions #'holo-layer-indent-change)
+    )
 
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
@@ -790,7 +792,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
 
   (when holo-layer-enable-indent-info
-    (remove-hook 'post-command-hook #'holo-layer-indent-change))
+    (remove-hook 'post-command-hook #'holo-layer-indent-change)
+    (remove-hook 'window-scroll-functions #'holo-layer-indent-change)
+    )
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
