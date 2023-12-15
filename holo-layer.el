@@ -221,6 +221,10 @@ you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-
   "Show background for window number more clarity if enable this option."
   :type 'boolean)
 
+(defcustom holo-layer-enable-indent-info nil
+  "Show window border if enable this option."
+  :type 'boolean)
+
 (defcustom holo-layer-window-number-color "#cc2444"
   "Color for window number."
   :type 'string)
@@ -506,6 +510,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
 
+(defun holo-layer-indent-change (&rest _)
+  (holo-layer-call-async "update_indent_info" (holo-layer-get-indent-infos)))
+
 (defun holo-layer-monitor-frame-changed (&rest _)
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              (not (equal (window-frame) holo-layer-emacs-frame)))
@@ -731,6 +738,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
 
+  (when holo-layer-enable-indent-info
+    (add-hook 'window-scroll-functions #'holo-layer-indent-change))
+
   (add-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
   (add-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
@@ -756,6 +766,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (setq sort-tab-render-function 'sort-tab-render-tabs))
 
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
+
+  (when holo-layer-enable-indent-info
+    (remove-hook 'window-scroll-functions #'holo-layer-indent-change))
 
   (remove-hook 'window-size-change-functions #'holo-layer-monitor-configuration-change)
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
@@ -852,20 +865,29 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defun holo-layer-get-indent-infos ()
   (save-window-excursion
     (save-excursion
-      (let (indent-infos)
+      (let (indent-infos window-start-cursor-info)
         (dolist (window (window-list))
           (select-window window t)
           (when (derived-mode-p 'prog-mode)
             (let ((window-info (holo-layer-get-window-info holo-layer-emacs-frame (selected-window) (selected-window)))
                   indent-offsets)
               (goto-char (window-start))
+              ;; using cursor info at first point to detect bias of x y
+              (setq window-start-cursor-info (holo-layer-get-cursor-info))
               (while (not (equal (line-number-at-pos (point))
                                  (line-number-at-pos (window-end))))
                 (back-to-indentation)
-                (setq indent-offsets (append indent-offsets (list (current-column))))
+                (if (and (eq (current-column) 0)
+                         (eq (point-at-eol) (point)))
+                    ;; using -1 to mark empty line
+                    (setq indent-offsets (append indent-offsets (list -1)))
+                  (setq indent-offsets (append indent-offsets (list (current-column)))))
                 (forward-line))
-              (setq indent-infos (append indent-infos (list (format "%s_%s" window-info (mapconcat #'number-to-string indent-offsets ","))))))))
-        (message "**** %s %s %s" (frame-char-width) (frame-char-height) (mapconcat #'identity indent-infos "|"))))))
+              (setq indent-infos (append indent-infos (list (format "%s_%s_%s" window-info
+                                                                    window-start-cursor-info
+                                                                    (mapconcat #'number-to-string indent-offsets ","))))))))
+        indent-infos
+        ))))
 
 (provide 'holo-layer)
 

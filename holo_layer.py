@@ -123,6 +123,9 @@ class HoloLayer:
     def update_place_info(self, word):
         self.holo_window.update_place_info(word)
 
+    def update_indent_info(self, emacs_indent_infos):
+        self.holo_window.update_indent_info(emacs_indent_infos)
+
     @PostGui()
     def show_window_number(self):
         self.holo_window.show_window_number()
@@ -222,6 +225,7 @@ class HoloWindow(QWidget):
         self.inactive_window_border_color = None
 
         self.emacs_frame_info = None
+        self.emacs_indent_infos = None
         self.menu_info = None
         self.window_info = []
         self.sort_tab_info = {}
@@ -244,6 +248,11 @@ class HoloWindow(QWidget):
         self.screen = QGuiApplication.primaryScreen()
         self.screen_geometry = self.screen.availableGeometry()
         self.setGeometry(self.screen_geometry)
+
+
+        # TODO adjust color according to theme
+        self.rainbow_indent_colors = [Qt.GlobalColor.red, Qt.GlobalColor.yellow, Qt.GlobalColor.green,
+                                      Qt.GlobalColor.cyan, Qt.GlobalColor.blue, Qt.GlobalColor.magenta]
 
         self.show_up()
 
@@ -288,12 +297,65 @@ class HoloWindow(QWidget):
 
         self.update_menu_clip_area(painter)
 
+        self.update_rainbow_indent(painter)
+
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
 
         self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
+
+    def update_rainbow_indent(self, painter):
+        if self.emacs_indent_infos:
+            for window_indent_info in self.emacs_indent_infos:
+                if '_' not in window_indent_info or ':' not in window_indent_info:
+                    continue
+
+                window_info, cursor_info, indents = window_indent_info.split('_')
+                # TODO only line indent is not enough to get indent line
+                # need add text objects info from lang parser
+                indents = [int(i) for i in indents.split(',')]
+                cursor_x, cursor_y, cursor_w, cursor_h = [int(i) for i in cursor_info.split(':')]
+                window_info = [int(i) for i in window_indent_info.split(':')[:4]]
+
+                x, y, w, h = window_info
+                x = cursor_x
+                y = cursor_y
+
+                ava_indents = sorted(set(indents))
+                if ava_indents[0] == 0:
+                    del ava_indents[0]
+
+                del_index = []
+                # TODO get indent level from emacs
+                # and skip indent that not multiple of index level
+                for ci, indent_level in enumerate(ava_indents):
+                    if indent_level % 4 != 0:
+                        del_index.append(ci)
+                for index in sorted(del_index, reverse=True):
+                    del ava_indents[index]
+
+                # first sort available indents by indent level
+                # add indent line according to indent level
+                for ci, indent_level in enumerate(ava_indents):
+                    painter.setPen(self.rainbow_indent_colors[ci % len(self.rainbow_indent_colors)])
+                    last_index = -1
+                    for index, indent in enumerate(indents):
+                        if indent > indent_level or indent == -1:
+                            continue
+                        cur_indents = indents[last_index+1:index]
+                        if len(cur_indents) > 0 and \
+                           max(cur_indents) > indent_level and sum(cur_indents) > 0:
+                            # TODO cache draw states
+                            painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
+                                             x + indent_level * cursor_w, y + cursor_h * index)
+                        last_index = index
+                    if last_index < len(indents) - 1:
+                        painter.drawLine(x + indent_level * cursor_w, y + cursor_h * (last_index + 1),
+                                        x + indent_level * cursor_w, y + cursor_h * len(indents))
+
+
 
     def update_menu_clip_area(self, painter):
         if self.emacs_frame_info:
@@ -327,6 +389,10 @@ class HoloWindow(QWidget):
         if self.place_word != word:
             self.place_word = word
             self.update()
+
+    def update_indent_info(self, emacs_indent_infos):
+        self.emacs_indent_infos = emacs_indent_infos
+        self.update()
 
     def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info):
         if emacs_frame_info:
