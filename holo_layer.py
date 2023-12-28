@@ -294,7 +294,7 @@ class HoloWindow(QWidget):
 
         self.update_menu_clip_area(painter)
 
-        self.indent_line.draw(painter, self.emacs_indent_infos)
+        self.indent_line.draw(painter, self.emacs_indent_infos, self.emacs_frame_info)
 
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
 
