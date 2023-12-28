@@ -11,8 +11,9 @@ class IndentLine(QObject):
 
         self.rainbow_indent_colors = list(map(lambda x: QColor(x), get_emacs_var("holo-layer-indent-colors")))
 
-    def draw(self, painter, emacs_indent_infos):
-        if emacs_indent_infos:
+    def draw(self, painter, emacs_indent_infos, emacs_frame_info):
+        if emacs_indent_infos and emacs_frame_info:
+            [emacs_x, emacs_y, _, _] = emacs_frame_info
             for window_indent_info in emacs_indent_infos:
                 if '_' not in window_indent_info or ':' not in window_indent_info:
                     continue
@@ -25,8 +26,8 @@ class IndentLine(QObject):
                 window_info = [int(i) for i in window_indent_info.split(':')[:4]]
 
                 x, y, w, h = window_info
-                x = cursor_x
-                y = cursor_y
+                x = cursor_x + emacs_x
+                y = cursor_y + emacs_y
 
                 # Add some offset make sure indent at right of indent char.
                 x += 5
