@@ -72,6 +72,7 @@ Add the following configuration when using Hyprland:
 windowrulev2 = float,title:(holo_layer.py)
 windowrulev2 = nofocus,title:(holo_layer.py)
 windowrulev2 = noblur,title:(holo_layer.py)
+windowrulev2 = fakefullscreen,title:(holo_layer.py)
 ```
 
 ## Feedback Issues
