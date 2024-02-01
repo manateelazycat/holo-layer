@@ -128,6 +128,21 @@ class CursorAnimation(QObject):
 
         return QPolygonF(points)
 
+    # draw a line cursor smoothly move from cs to ce
+    def cursor_animation_draw_smooth_cursor(self, cs, ce, ws, hs, we, he, p):
+        diff = ce - cs
+        diff_x = diff.x()
+        diff_y = diff.y()
+        start = [cs, cs + QPointF(ws, 0), cs + QPointF(ws, hs), cs + QPointF(0, hs)]
+        end = [ce, ce + QPointF(we, 0), ce + QPointF(we, he), ce + QPointF(0, he)]
+
+        points = [
+            p * e + (1 - p) * s
+            for p, s, e in zip([p, p, p, p], start, end)
+        ]
+
+        return QPolygonF(points)
+
     def cursor_animation_draw_jelly_easing_cursor(self, cs, ce, ws, hs, we, he, p):
         diff = ce - cs
         diff_x = diff.x()
@@ -197,6 +212,8 @@ class CursorAnimation(QObject):
             return self.cursor_animation_draw_arrow_cursor(cs, ce, ws, hs, p)
         elif self.cursor_animation_type == "jelly easing":
             return self.cursor_animation_draw_jelly_easing_cursor(cs, ce, ws, hs, we, he, p)
+        elif self.cursor_animation_type == "smooth":
+            return self.cursor_animation_draw_smooth_cursor(cs, ce, 1, hs, 1, he, p)
         else:
             return self.cursor_animation_draw_jelly_cursor(cs, ce, ws, hs, we, he, p)
 
