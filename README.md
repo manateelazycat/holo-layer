@@ -53,10 +53,12 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 * holo-layer-hide-mode-line: Enable this option to hide the mode-line, it is off by default
 * holo-layer-active-window-color: The border color of the active window, only displayed when there are more than two windows
 * holo-layer-inactive-window-color: The border color of the inactive window, only displayed when there are more than two windows
-* holo-layer-cursor-color: The color of the jelly cursor, by default it matches the background color of the Emacs cursor
+* holo-layer-cursor-color: Color of the cursor for fruit-like cursor, default is nil, will follow the current background color of Emacs dynamically, or can be set to avoid dynamic change
 * holo-layer-cursor-alpha: The Alpha transparency of the jelly cursor, the default is 200, completely transparent is 0, opaque is 255
 * holo-layer-cursor-animation-interval: The interval time of the jelly cursor animation, the default is 10ms, don't worry about the time interval, because the animation effect is drawn with PyQt multithreading, it does not affect Emacs performance
 * holo-layer-cursor-block-commands: If you don't want to display cursor animation in some cases, you can add the command string to this list, for example, after `self-insert-command` is added to the list, inserting characters will not produce animation
+* holo-layer-cursor-animation-color-gradient: Enable cursor color gradient, default is t
+* holo-layer-cursor-animation-color-gradient-start-value: The start value of gradient cursor color, start color is lighter 50 than cursor color
 * holo-layer-place-info-text-color: The text color of the information at the cursor, the default is the foreground color of `default`
 * holo-layer-place-info-background-color: The background color of the information at the cursor, the default is the background color of `default`
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18

@@ -53,10 +53,12 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 * holo-layer-hide-mode-line: 打开这个选项隐藏 mode-line， 默认是关闭的
 * holo-layer-active-window-color: 激活窗口的边框颜色， 只在超过两个窗口的时候显示
 * holo-layer-inactive-window-color: 非激活窗口的边框颜色， 只在超过两个窗口的时候显示
-* holo-layer-cursor-color: 果冻光标的颜色， 默认和 Emacs 光标的背景色一致
+* holo-layer-cursor-color: 果冻光标的颜色， 默认为 nil， 会跟随 Emacs 当前的光标背景色动态变化， 也可以设置颜色避免动态变换
 * holo-layer-cursor-alpha: 果冻光标的 Alpha 透明度， 默认是 200， 完全透明是 0， 不透明是 255 
 * holo-layer-cursor-animation-interval: 果冻光标动画的间隔时间， 默认是 10ms， 不用担心时间间隔， 因为动画效果是用 PyQt 多线程绘制的， 不影响 Emacs 性能
 * holo-layer-cursor-block-commands: 如果在某些情况下你不希望显示光标动画， 可以将命令字符串添加到这个列表中, 比如 `self-insert-command` 加入列表后， 插入字符不会产生动画
+* holo-layer-cursor-animation-color-gradient: 光标动画的渐变颜色， 默认开启
+* holo-layer-cursor-animation-color-gradient-start-value: 光标动画的渐变颜色的起始颜色， 会比光标背景色浅 50 个单位
 * holo-layer-place-info-text-color: 光标处信息的文字颜色， 默认用的`default`的前景色
 * holo-layer-place-info-background-color: 光标处信息的背景颜色， 默认用的`default`的背景色
 * holo-layer-place-info-font-size: 光标处信息的字体大小， 默认是 18

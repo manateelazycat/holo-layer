@@ -166,8 +166,8 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   :type 'boolean)
 
 (defcustom holo-layer-cursor-animation-color-gradient-start-value 50
-  "In cursor color gradient value, start color is lighter 50 than cursor color."
-  :type 'boolean)
+  "The start value of gradient cursor color, start color is lighter 50 than cursor color."
+  :type 'interger)
 
 (defcustom holo-layer-cursor-animation-type "jelly"
   "Cursor animation type can be (jelly, arrow, jelly easing)"
