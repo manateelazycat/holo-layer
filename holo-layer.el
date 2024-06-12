@@ -721,7 +721,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
       (when (and (> y (- (+ window-y window-h) h)) (equal holo-layer-last-window (selected-window)))
         (setq y (- (+ window-y window-h) h)))
       (setq holo-layer-last-window (selected-window))
-      (format "%s:%s:%s:%s" x y w h))))
+      (format "%s:%s:%s:%s:%s" x y w h (face-background 'cursor)))))
 
 (defun holo-layer-get-window-info (frame window current-window)
   (with-current-buffer (window-buffer window)
