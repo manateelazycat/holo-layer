@@ -12,6 +12,7 @@ class CursorAnimation(QObject):
         self.window = window
 
         self.cursor_color = None
+        self.cursor_color_configured = None
         self.cursor_info = []
         self.cursor_prev_info = []
         self.cursor_timer = QTimer(self)
@@ -32,20 +33,31 @@ class CursorAnimation(QObject):
         (cursor_color,
          cursor_alpha) = get_emacs_vars(["holo-layer-cursor-color",
                                          "holo-layer-cursor-alpha"])
-        self.cursor_color = QColor(cursor_color)
-        self.cursor_color.setAlpha(cursor_alpha)
+        if cursor_color:
+            self.cursor_color_configured = True
+            self.cursor_color = QColor(cursor_color)
+            self.cursor_color.setAlpha(cursor_alpha)
+        else:
+            self.cursor_color_configured = False
 
     def update_info(self, cursor_info, emacs_frame_info):
         # Don't update cursor info if cursor_info unpack failed.
-        if not self.enable_cursor_animation or cursor_info is None or len(cursor_info) != 4:
+        if not self.enable_cursor_animation or cursor_info is None or len(cursor_info) != 5:
             return False
 
-        [x, y, w, h] = cursor_info
+        [x, y, w, h, color] = cursor_info
+
+        if not self.cursor_color_configured:
+            # Haven't been set by user's config
+            cursor_alpha = get_emacs_var("holo-layer-cursor-alpha")
+            self.cursor_color = QColor(color)
+            self.cursor_color.setAlpha(cursor_alpha)
+            # Stay unconfigured to use realtime cursor color
         if len(emacs_frame_info) > 1:
             cursor_info = [int(x) + emacs_frame_info[0],
-                           int(y) + emacs_frame_info[1], int(w), int(h)]
+                           int(y) + emacs_frame_info[1], int(w), int(h), color]
         else:
-            cursor_info = [int(x), int(y), int(w), int(h)]
+            cursor_info = [int(x), int(y), int(w), int(h), color]
 
         self.cursor_info = cursor_info
         if len(self.cursor_prev_info) > 1 and \
@@ -64,8 +76,8 @@ class CursorAnimation(QObject):
             return False
 
     def create_cursor_move_animation(self):
-        [prev_x, prev_y, prev_w, prev_h] = self.cursor_prev_info
-        [x, y, w, h] = self.cursor_info
+        [prev_x, prev_y, prev_w, prev_h, prev_color] = self.cursor_prev_info
+        [x, y, w, h, color] = self.cursor_info
 
         if prev_x != x or prev_y != y:
             self.cursor_start = QPointF(prev_x, prev_y)
@@ -219,7 +231,7 @@ class CursorAnimation(QObject):
 
     def draw(self, painter):
         if self.cursor_animation_percent < 1 and self.enable_cursor_animation:
-            if self.cursor_color is None:
+            if self.cursor_color_configured is None:
                 self.update_cursor_color()
             # cursor animation
             if self.cursor_animation_type == "arrow":
