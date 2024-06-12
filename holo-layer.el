@@ -165,12 +165,18 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable cursor color gradient."
   :type 'boolean)
 
+(defcustom holo-layer-cursor-animation-color-gradient-start-value 50
+  "In cursor color gradient value, start color is lighter 50 than cursor color."
+  :type 'boolean)
+
 (defcustom holo-layer-cursor-animation-type "jelly"
   "Cursor animation type can be (jelly, arrow, jelly easing)"
   :type 'string)
 
-(defcustom holo-layer-cursor-color (face-background 'cursor)
-  "Cursor color."
+(defcustom holo-layer-cursor-color nil
+  "Cursor color.
+
+If you set it with nil, cursor color will follow current state dynamically."
   :type 'string)
 
 (defcustom holo-layer-cursor-alpha 200

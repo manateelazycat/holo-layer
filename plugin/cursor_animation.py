@@ -23,10 +23,12 @@ class CursorAnimation(QObject):
          self.cursor_animation_interval,
          self.cursor_animation_type,
          self.cursor_color_gradient,
+         self.cursor_color_gradient_start_value,
          self.enable_cursor_animation) = get_emacs_vars(["holo-layer-cursor-animation-duration",
                                                          "holo-layer-cursor-animation-interval",
                                                          "holo-layer-cursor-animation-type",
                                                          "holo-layer-cursor-animation-color-gradient",
+                                                         "holo-layer-cursor-animation-color-gradient-start-value",
                                                          "holo-layer-enable-cursor-animation"])
 
     def update_cursor_color(self):
@@ -246,7 +248,7 @@ class CursorAnimation(QObject):
 
                 if self.cursor_color_gradient:
                     gradient = QLinearGradient(self.cursor_start, self.cursor_end)
-                    gradient.setColorAt(0.0, self.cursor_color.lighter(200))
+                    gradient.setColorAt(0.0, self.cursor_color.lighter(self.cursor_color_gradient_start_value))
                     gradient.setColorAt(1.0, self.cursor_color)
                     painter.setBrush(gradient)
                 else:
