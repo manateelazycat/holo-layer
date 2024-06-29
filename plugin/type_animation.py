@@ -148,7 +148,7 @@ class TypeAnimation(QGraphicsView):
 
         (self.enable_type_animation, self.type_style) = get_emacs_vars([
             "holo-layer-enable-type-animation",
-            "holo-layer-type-style"
+            "holo-layer-type-animation-style"
         ])
 
     def trigger_firework(self, x, y):

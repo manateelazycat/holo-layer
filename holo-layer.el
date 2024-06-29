@@ -165,7 +165,7 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable type animation."
   :type 'boolean)
 
-(defcustom holo-layer-type-style "flame"
+(defcustom holo-layer-type-animation-style "flame"
   "Type animation style, we can set it with `firework' or `flame' string, default is flame."
   :type 'string)
 
