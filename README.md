@@ -65,7 +65,7 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 * holo-layer-cursor-block-commands: If you don't want to display cursor animation in some cases, you can add the command string to this list, for example, after `self-insert-command` is added to the list, inserting characters will not produce animation
 * holo-layer-cursor-animation-color-gradient: Enable cursor color gradient, default is t
 * holo-layer-cursor-animation-color-gradient-start-value: The start value of gradient cursor color, start color is lighter 50 than cursor color
-* holo-layer-type-animation-style: Cursor type animation style, can be set to `"flame"`,`"firework"`, `"supernova"`, `"lightning"`, default is `"flame"`
+* holo-layer-type-animation-style: Cursor type animation style, can be set to `"flame"`,`"firework"`, `"supernova"`, `"lightning"`, `"balloon"`, default is `"flame"`
 * holo-layer-place-info-text-color: The text color of the information at the cursor, the default is the foreground color of `default`
 * holo-layer-place-info-background-color: The background color of the information at the cursor, the default is the background color of `default`
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18

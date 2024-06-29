@@ -7,6 +7,85 @@ import math
 import random
 from utils import *
 
+class BalloonParticle(QGraphicsItem):
+    def __init__(self, color):
+        super().__init__()
+        self.color = color
+        self.velocity = QPointF(random.uniform(-0.5, 0.5), random.uniform(-2, -1))
+        self.opacity = 1.0
+        self.size = random.uniform(10, 20)
+
+    def boundingRect(self):
+        return QRectF(-self.size/2, -self.size/2, self.size, self.size)
+
+    def paint(self, painter, option, widget):
+        painter.setPen(QPen(self.color.darker(), 1))
+        painter.setBrush(self.color)
+        painter.setOpacity(self.opacity)
+        painter.drawEllipse(self.boundingRect())
+
+        # Draw balloon string
+        painter.drawLine(QPointF(0, self.size/2), QPointF(0, self.size))
+
+    def advance(self):
+        self.setPos(self.pos() + self.velocity)
+        self.opacity -= 0.01
+        if self.opacity <= 0:
+            if self.scene():
+                self.scene().removeItem(self)
+            return False
+        return True
+
+class Balloon(QGraphicsItem):
+    def __init__(self, x, y):
+        super().__init__()
+        self.setPos(x, y)
+        self.particles = []
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_particles)
+        self.timer.start(10)
+
+        QTimer.singleShot(1000, self.remove_balloon)
+
+    def boundingRect(self):
+        return QRectF(-30, -60, 60, 60)
+
+    def paint(self, painter, option, widget):
+        # Balloon itself is invisible, only particles are visible
+        pass
+
+    def update_particles(self):
+        self.particles = [p for p in self.particles if p.advance()]
+        if len(self.particles) < 5:
+            color = QColor(random.choice([
+                '#FF6B6B',  # 珊瑚红
+                '#4ECDC4',  # 薄荷绿
+                '#45B7D1',  # 天蓝色
+                '#FFA07A',  # 浅鲑鱼色
+                '#98D8C8',  # 海泡色
+                '#F7E8A6',  # 香槟色
+                '#AED9E0',  # 粉蓝色
+                '#FAD02E',  # 向日葵黄
+                '#B19CD9',  # 淡紫色
+                '#FF90B3',  # 粉红色
+                '#7FBC8C',  # 鼠尾草绿
+                '#C5E99B',  # 嫩绿色
+                '#F9D5E5',  # 浅粉色
+                '#E6E6FA',  # 薰衣草色
+                '#FFD700',  # 金色
+            ]))
+
+            particle = BalloonParticle(color)
+            particle.setPos(random.uniform(-20, 20), random.uniform(-20, 20))
+            particle.setParentItem(self)
+            self.particles.append(particle)
+
+    def remove_balloon(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
+
 
 class LightningBolt(QGraphicsItem):
     def __init__(self, start, end, branch_probability=0.3):
@@ -287,6 +366,9 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "flame":
             flame = Flame(x, y)
             self.addItem(flame)
+        elif style == "balloon":
+            balloon = Balloon(x, y)
+            self.addItem(balloon)
         elif style == "lightning":
             angle = random.uniform(0, 2 * math.pi)
             length = random.uniform(100, 200)
@@ -297,8 +379,6 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "supernova":
             supernova = Supernova(x, y)
             self.addItem(supernova)
-
-
 
 
 class TypeAnimation(QGraphicsView):
