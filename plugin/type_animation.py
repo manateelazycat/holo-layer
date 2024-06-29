@@ -3,6 +3,9 @@ from PyQt6.QtCore import QPoint, QTimer, Qt, QPointF, QRectF
 from PyQt6.QtGui import QPainter, QRadialGradient
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QGraphicsTextItem
+
 import math
 import random
 from utils import *
@@ -24,6 +27,81 @@ ROMANTIC_COLORS = [
     '#E6E6FA', # Lavender
     '#FFD700', # Gold
 ]
+
+class MatrixRainDrop(QGraphicsTextItem):
+    def __init__(self, x, height):
+        super().__init__()
+        self.setPos(x, 0)
+        self.height = height
+        self.speed = random.uniform(1, 3)
+        self.setPlainText(random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"))
+        self.setDefaultTextColor(QColor(0, 255, 0, 255))  # Bright green
+        self.setFont(QFont("Courier", 12))
+        self.lifetime = random.randint(10, 50)  # Number of frames the drop will live
+
+    def advance(self):
+        new_y = self.y() + self.speed
+        self.setY(new_y)
+        self.lifetime -= 1
+        if random.random() < 0.1:  # 10% chance to change character
+            self.setPlainText(random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"))
+        if self.lifetime <= 0 or new_y > self.height:
+            return False
+        return True
+
+class MatrixRainEffect(QGraphicsItem):
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.setPos(x, y - 120)
+        self.bounds = QRectF(0, 0, width, height)
+        self.drops = []
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_drops)
+        self.timer.start(10)  # Update about 30 times per second
+
+        self.opacity = 1.0
+        QTimer.singleShot(300, self.start_fading)  # Start fading after 5 seconds
+        QTimer.singleShot(500, self.remove_effect)  # Remove effect after 7.5 seconds
+
+    def boundingRect(self):
+        return self.bounds
+
+    def paint(self, painter, option, widget):
+        # The effect itself is invisible, only drops are visible
+        pass
+
+    def update_drops(self):
+        # Add new drops
+        if len(self.drops) < 50 and random.random() < 0.3:
+            new_drop = MatrixRainDrop(random.uniform(0, self.bounds.width()), self.bounds.height())
+            new_drop.setParentItem(self)
+            self.drops.append(new_drop)
+
+        # Update existing drops
+        self.drops = [drop for drop in self.drops if drop.advance()]
+
+    def start_fading(self):
+        self.fade_timer = QTimer()
+        self.fade_timer.timeout.connect(self.fade_out)
+        self.fade_timer.start(50)  # Update fade every 50ms
+
+    def fade_out(self):
+        self.opacity -= 0.02
+        if self.opacity < 0:
+            self.opacity = 0
+        for drop in self.drops:
+            color = drop.defaultTextColor()
+            color.setAlpha(int(255 * self.opacity))
+            drop.setDefaultTextColor(color)
+        self.update()
+
+    def remove_effect(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
+        self.timer.stop()
+        if hasattr(self, 'fade_timer'):
+            self.fade_timer.stop()
 
 class Firefly(QGraphicsItem):
     def __init__(self, bounds):
@@ -545,6 +623,9 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "water":
             splash = WaterSplash(x, y)
             self.addItem(splash)
+        elif style == "matrix":
+            matrix_effect = MatrixRainEffect(x, y, 200, 200)  # 调整大小
+            self.addItem(matrix_effect)
         elif style == "firefly":
             firefly_effect = FireflyEffect(x, y, 50, 50)  # Adjust size as needed
             self.addItem(firefly_effect)
