@@ -370,7 +370,7 @@ class HoloWindow(QWidget):
             window_info[i] = [int(x), int(y), int(w), int(h), is_active_window]
         self.window_info = window_info
 
-        if is_insert_command and self.firework_view.enable_cursor_firework:
+        if is_insert_command and self.firework_view.enable_type_animation:
             if len(cursor_info) > 1:
                 firework_x = int(cursor_info[0])
                 firework_y = int(cursor_info[1])
