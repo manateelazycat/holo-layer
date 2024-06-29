@@ -7,6 +7,70 @@ import math
 import random
 from utils import *
 
+class WaterDroplet(QGraphicsItem):
+    def __init__(self, color):
+        super().__init__()
+        self.color = color
+        self.size = random.uniform(2, 6)
+        angle = random.uniform(0, 2 * math.pi)
+        speed = random.uniform(1, 3)
+        self.velocity = QPointF(speed * math.cos(angle), speed * math.sin(angle) - 2)
+        self.opacity = 1.0
+
+    def boundingRect(self):
+        return QRectF(-self.size/2, -self.size/2, self.size, self.size)
+
+    def paint(self, painter, option, widget):
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self.color)
+        painter.setOpacity(self.opacity)
+        painter.drawEllipse(self.boundingRect())
+
+    def advance(self):
+        self.setPos(self.pos() + self.velocity)
+        self.velocity += QPointF(0, 0.1)  # Gravity effect
+        self.opacity -= 0.02
+        self.size -= 0.05
+        if self.opacity <= 0 or self.size <= 0:
+            if self.scene():
+                self.scene().removeItem(self)
+            return False
+        return True
+
+class WaterSplash(QGraphicsItem):
+    def __init__(self, x, y):
+        super().__init__()
+        self.setPos(x, y)
+        self.particles = []
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_particles)
+        self.timer.start(16)  # 60 FPS
+
+        self.create_particles()
+        QTimer.singleShot(1000, self.remove_splash)
+
+    def boundingRect(self):
+        return QRectF(-50, -50, 100, 100)
+
+    def paint(self, painter, option, widget):
+        # The splash itself is invisible, only particles are visible
+        pass
+
+    def create_particles(self):
+        for _ in range(20):
+            color = QColor(random.choice(['#4FC3F7', '#29B6F6', '#03A9F4', '#039BE5', '#0288D1']))
+            particle = WaterDroplet(color)
+            particle.setParentItem(self)
+            self.particles.append(particle)
+
+    def update_particles(self):
+        self.particles = [p for p in self.particles if p.advance()]
+
+    def remove_splash(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
+
 class BalloonParticle(QGraphicsItem):
     def __init__(self, color):
         super().__init__()
@@ -369,6 +433,9 @@ class TypeAnimationScene(QGraphicsScene):
             color = QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             firework = Firework(x, y, color)
             self.addItem(firework)
+        elif style == "water":
+            splash = WaterSplash(x, y)
+            self.addItem(splash)
         elif style == "flame":
             flame = Flame(x, y)
             self.addItem(flame)
