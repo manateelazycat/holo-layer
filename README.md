@@ -29,6 +29,11 @@ Note:
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
+### Type Animation
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/type-animation.png">
+</p>
+
 ### Indent Rainbow
 <p align="center">
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/indent-line.png">

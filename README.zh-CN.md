@@ -29,6 +29,11 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/jelly-cursor.gif">
 </p>
 
+### 敲击动画
+<p align="center">
+  <img style='height: auto; width: 80%; object-fit: contain' src="./demo/type-animation.png">
+</p>
+
 ### 彩虹缩进辅助线
 <p align="center">
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/indent-line.png">
