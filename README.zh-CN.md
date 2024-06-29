@@ -18,9 +18,10 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 (holo-layer-enable)
 ```
 
+如果 holo-layer 没有正常启动， 请确保 `holo-layer-python-command` 路径和你系统 `which python` 的路径一致
+
 备注： 
 * MacOS 请使用窗口模式
-* 如果你用 Conda 或者其他虚拟环境， 请先设置 `holo-layer-python-command` 为对应的 Python 路径。
 
 ## 演示效果
 

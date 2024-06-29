@@ -18,9 +18,10 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 (holo-layer-enable)
 ```
 
+If the holo-layer hasn't started normally, please ensure that the `holo-layer-python-command` path is consistent with your system's `which python` path.
+
 Note:
 * For MacOS, please use window mode
-* If you are using Conda or other virtual environments, please first set `holo-layer-python-command` to the corresponding Python path.
 
 ## Demo
 
