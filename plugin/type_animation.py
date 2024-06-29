@@ -7,6 +7,131 @@ import math
 import random
 from utils import *
 
+
+
+class Firefly(QGraphicsItem):
+    def __init__(self, bounds):
+        super().__init__()
+        self.bounds = bounds
+        self.setPos(random.uniform(bounds.left(), bounds.right()),
+                    random.uniform(bounds.top(), bounds.bottom()))
+        self.color = QColor(random.choice([
+                '#FF6B6B',  # 珊瑚红
+                '#4ECDC4',  # 薄荷绿
+                '#45B7D1',  # 天蓝色
+                '#FFA07A',  # 浅鲑鱼色
+                '#98D8C8',  # 海泡色
+                '#F7E8A6',  # 香槟色
+                '#AED9E0',  # 粉蓝色
+                '#FAD02E',  # 向日葵黄
+                '#B19CD9',  # 淡紫色
+                '#FF90B3',  # 粉红色
+                '#7FBC8C',  # 鼠尾草绿
+                '#C5E99B',  # 嫩绿色
+                '#F9D5E5',  # 浅粉色
+                '#E6E6FA',  # 薰衣草色
+                '#FFD700',  # 金色
+            ]))
+
+        self.size = random.uniform(2, 4)
+        self.opacity = random.uniform(0.3, 1.0)
+        self.direction = random.uniform(0, 2 * math.pi)
+        self.speed = random.uniform(0.5, 1.5)
+        self.blink_speed = random.uniform(0.02, 0.05)
+        self.blink_direction = 1
+
+    def boundingRect(self):
+        return QRectF(-self.size, -self.size, self.size * 2, self.size * 2)
+
+    def paint(self, painter, option, widget):
+        gradient = QRadialGradient(0, 0, self.size)
+        color = self.color.toRgb()
+        color.setAlpha(int(255 * self.opacity))
+        gradient.setColorAt(0, color)
+        gradient.setColorAt(1, Qt.GlobalColor.transparent)
+        painter.setBrush(gradient)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(self.boundingRect())
+
+    def advance(self):
+        # Move the firefly
+        new_pos = self.pos() + QPointF(math.cos(self.direction) * self.speed,
+                                       math.sin(self.direction) * self.speed)
+
+        # If firefly goes out of bounds, wrap around to the other side
+        if not self.bounds.contains(new_pos):
+            if new_pos.x() < self.bounds.left():
+                new_pos.setX(self.bounds.right())
+            elif new_pos.x() > self.bounds.right():
+                new_pos.setX(self.bounds.left())
+            if new_pos.y() < self.bounds.top():
+                new_pos.setY(self.bounds.bottom())
+            elif new_pos.y() > self.bounds.bottom():
+                new_pos.setY(self.bounds.top())
+
+        self.setPos(new_pos)
+
+        # Randomly change direction
+        if random.random() < 0.05:  # 5% chance to change direction each frame
+            self.direction = random.uniform(0, 2 * math.pi)
+
+        # Blink effect
+        self.opacity += self.blink_direction * self.blink_speed
+        if self.opacity > 1.0 or self.opacity < 0.3:
+            self.blink_direction *= -1
+
+        self.update()
+        return True
+
+class FireflyEffect(QGraphicsItem):
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.setPos(x, y - 50)
+        self.bounds = QRectF(0, 0, width, height)
+        self.fireflies = [Firefly(self.bounds) for _ in range(10)] # Create fireflies number
+        for firefly in self.fireflies:
+            firefly.setParentItem(self)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_fireflies)
+        self.timer.start(33)  # Update about 30 times per second
+
+        self.opacity = 1.0
+        QTimer.singleShot(500, self.start_fading)  # Start fading after 5 seconds
+        QTimer.singleShot(700, self.remove_effect)  # Remove effect after 7.5 seconds (5s display + 2.5s fade)
+
+    def boundingRect(self):
+        return self.bounds
+
+    def paint(self, painter, option, widget):
+        # The effect itself is invisible, only fireflies are visible
+        pass
+
+    def update_fireflies(self):
+        for firefly in self.fireflies:
+            firefly.advance()
+
+    def start_fading(self):
+        self.fade_timer = QTimer()
+        self.fade_timer.timeout.connect(self.fade_out)
+        self.fade_timer.start(50)  # Update fade every 50ms
+
+    def fade_out(self):
+        self.opacity -= 0.02
+        if self.opacity < 0:
+            self.opacity = 0
+        for firefly in self.fireflies:
+            firefly.opacity = min(firefly.opacity, self.opacity)
+        self.update()
+
+    def remove_effect(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
+        self.timer.stop()
+        if hasattr(self, 'fade_timer'):
+            self.fade_timer.stop()
+
 class WaterDroplet(QGraphicsItem):
     def __init__(self, color):
         super().__init__()
@@ -436,6 +561,9 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "water":
             splash = WaterSplash(x, y)
             self.addItem(splash)
+        elif style == "firefly":
+            firefly_effect = FireflyEffect(x, y, 50, 50)  # Adjust size as needed
+            self.addItem(firefly_effect)
         elif style == "flame":
             flame = Flame(x, y)
             self.addItem(flame)
