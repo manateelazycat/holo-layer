@@ -2,9 +2,11 @@ from PyQt6.QtGui import QColor, QPen
 from PyQt6.QtCore import QPoint, QTimer, Qt, QPointF, QRectF
 from PyQt6.QtGui import QPainter, QRadialGradient
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem
+from PyQt6.QtGui import QPixmap
 import math
 import random
 from utils import *
+
 
 class LightningBolt(QGraphicsItem):
     def __init__(self, start, end, branch_probability=0.3):
@@ -15,6 +17,10 @@ class LightningBolt(QGraphicsItem):
         self.segments = []
         self.generate_lightning()
         self.opacity = 1.0
+
+        self.pixmap = None
+        self.bounding_rect = None
+        self.create_pixmap()
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_lightning)
@@ -43,23 +49,37 @@ class LightningBolt(QGraphicsItem):
             self.create_segment(mid, branch_end)
 
     def boundingRect(self):
-        return QRectF(self.start, self.end).normalized().adjusted(-20, -20, 20, 20)
+        return self.bounding_rect
 
-    def paint(self, painter, option, widget):
+    def create_pixmap(self):
+        rect = QRectF(self.start, self.end).normalized().adjusted(-20, -20, 20, 20)
+        self.bounding_rect = rect
+        self.pixmap = QPixmap(rect.size().toSize())
+        self.pixmap.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(self.pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        main_color = QColor(200, 220, 255, int(255 * self.opacity))
+        painter.translate(-rect.topLeft())
+
+        main_color = QColor(200, 220, 255, 255)
         painter.setPen(QPen(main_color, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         for start, end in self.segments:
             painter.drawLine(start, end)
 
-        glow_color = QColor(220, 240, 255, int(100 * self.opacity))
+        glow_color = QColor(220, 240, 255, 100)
         painter.setPen(QPen(glow_color, 6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         for start, end in self.segments:
             painter.drawLine(start, end)
 
+        painter.end()
+
+    def paint(self, painter, option, widget):
+        painter.setOpacity(self.opacity)
+        painter.drawPixmap(self.boundingRect().topLeft(), self.pixmap)
+
     def update_lightning(self):
-        self.opacity -= 0.1
+        self.opacity -= 0.05
         if self.opacity <= 0:
             if self.scene():
                 self.scene().removeItem(self)
