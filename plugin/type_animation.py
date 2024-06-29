@@ -1,9 +1,81 @@
 from PyQt6.QtCore import QPoint, QTimer, Qt, QPointF, QRectF
 from PyQt6.QtGui import QPainter, QColor, QRadialGradient
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem
+import math
 import random
 from utils import *
 
+class SupernovaParticle(QGraphicsItem):
+    def __init__(self, color):
+        super().__init__()
+        self.color = color
+        angle = random.uniform(0, 2 * 3.14159)
+        speed = random.uniform(1, 3)
+        self.velocity = QPointF(speed * math.cos(angle), speed * math.sin(angle))
+        self.opacity = 1.0
+        self.size = 4
+
+    def boundingRect(self):
+        return QRectF(-self.size/2, -self.size/2, self.size, self.size)
+
+    def paint(self, painter, option, widget):
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self.color)
+        painter.setOpacity(self.opacity)
+        painter.drawEllipse(self.boundingRect())
+
+    def advance(self):
+        self.setPos(self.pos() + self.velocity)
+        self.opacity -= 0.02
+        self.size -= 0.05
+        if self.opacity <= 0 or self.size <= 0:
+            if self.scene():
+                self.scene().removeItem(self)
+            return False
+        return True
+
+class Supernova(QGraphicsItem):
+    def __init__(self, x, y):
+        super().__init__()
+        self.particles = []
+        self.core_size = 30
+        self.core_opacity = 1.0
+
+        self.setPos(x, y - 50)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_supernova)
+        self.timer.start(10)
+
+        QTimer.singleShot(300, self.remove_supernova)
+
+    def boundingRect(self):
+        return QRectF(-100, -100, 200, 200)
+
+    def update_supernova(self):
+        # Update existing particles
+        self.particles = [p for p in self.particles if p.advance()]
+
+        # Create new particles
+        for _ in range(5):
+            color = QColor(random.choice(['red', 'yellow', 'orange', 'white']))
+            particle = SupernovaParticle(color)
+            particle.setPos(0, 0)
+            particle.setParentItem(self)
+            self.particles.append(particle)
+
+        # Update core
+        self.core_size += 0.5
+        self.core_opacity -= 0.01
+        if self.core_opacity < 0:
+            self.core_opacity = 0
+
+        self.update()
+
+    def remove_supernova(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
 
 class Particle(QGraphicsItem):
     def __init__(self, color):
@@ -134,6 +206,9 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "flame":
             flame = Flame(x, y)
             self.addItem(flame)
+        elif style == "supernova":
+            supernova = Supernova(x, y)
+            self.addItem(supernova)
 
 class TypeAnimation(QGraphicsView):
     def __init__(self, parent=None):
