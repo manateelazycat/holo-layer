@@ -7,7 +7,23 @@ import math
 import random
 from utils import *
 
-
+ROMANTIC_COLORS = [
+    '#FF6B6B', # Coral red
+    '#4ECDC4', # Mint green
+    '#45B7D1', # Sky blue
+    '#FFA07A', # Light salmon
+    '#98D8C8', # Sea foam
+    '#F7E8A6', # Champagne
+    '#AED9E0', # Powder blue
+    '#FAD02E', # Sunflower yellow
+    '#B19CD9', # Pale purple
+    '#FF90B3', # Pink
+    '#7FBC8C', # Sage green
+    '#C5E99B', # Soft green
+    '#F9D5E5', # Light pink
+    '#E6E6FA', # Lavender
+    '#FFD700', # Gold
+]
 
 class Firefly(QGraphicsItem):
     def __init__(self, bounds):
@@ -15,23 +31,7 @@ class Firefly(QGraphicsItem):
         self.bounds = bounds
         self.setPos(random.uniform(bounds.left(), bounds.right()),
                     random.uniform(bounds.top(), bounds.bottom()))
-        self.color = QColor(random.choice([
-                '#FF6B6B',  # 珊瑚红
-                '#4ECDC4',  # 薄荷绿
-                '#45B7D1',  # 天蓝色
-                '#FFA07A',  # 浅鲑鱼色
-                '#98D8C8',  # 海泡色
-                '#F7E8A6',  # 香槟色
-                '#AED9E0',  # 粉蓝色
-                '#FAD02E',  # 向日葵黄
-                '#B19CD9',  # 淡紫色
-                '#FF90B3',  # 粉红色
-                '#7FBC8C',  # 鼠尾草绿
-                '#C5E99B',  # 嫩绿色
-                '#F9D5E5',  # 浅粉色
-                '#E6E6FA',  # 薰衣草色
-                '#FFD700',  # 金色
-            ]))
+        self.color = QColor(random.choice(ROMANTIC_COLORS))
 
         self.size = random.uniform(2, 4)
         self.opacity = random.uniform(0.3, 1.0)
@@ -253,23 +253,7 @@ class Balloon(QGraphicsItem):
     def update_particles(self):
         self.particles = [p for p in self.particles if p.advance()]
         if len(self.particles) < 5:
-            color = QColor(random.choice([
-                '#FF6B6B',  # 珊瑚红
-                '#4ECDC4',  # 薄荷绿
-                '#45B7D1',  # 天蓝色
-                '#FFA07A',  # 浅鲑鱼色
-                '#98D8C8',  # 海泡色
-                '#F7E8A6',  # 香槟色
-                '#AED9E0',  # 粉蓝色
-                '#FAD02E',  # 向日葵黄
-                '#B19CD9',  # 淡紫色
-                '#FF90B3',  # 粉红色
-                '#7FBC8C',  # 鼠尾草绿
-                '#C5E99B',  # 嫩绿色
-                '#F9D5E5',  # 浅粉色
-                '#E6E6FA',  # 薰衣草色
-                '#FFD700',  # 金色
-            ]))
+            color = QColor(random.choice(ROMANTIC_COLORS))
 
             particle = BalloonParticle(color)
             particle.setPos(random.uniform(-20, 20), random.uniform(-20, 20))
