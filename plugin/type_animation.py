@@ -64,24 +64,24 @@ class Firework(QGraphicsItem):
         if scene:
             scene.removeItem(self)
 
-class FireworkScene(QGraphicsScene):
+class TypeAnimationScene(QGraphicsScene):
     def fire(self, x, y):
         color = QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         firework = Firework(x, y, color)
         self.addItem(firework)
 
-class FireworkView(QGraphicsView):
+class TypeAnimation(QGraphicsView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.firework_scene = FireworkScene()
+        self.firework_scene = TypeAnimationScene()
         self.setScene(self.firework_scene)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # Make sure firework render coordinate same as cursor coordinate.
         self.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        self.enable_cursor_firework = get_emacs_var("holo-layer-enable-cursor-firework")
+        self.enable_cursor_firework = get_emacs_var("holo-layer-enable-type-animation")
 
     def trigger_firework(self, x, y):
         # It's important, we need call mapToScene to make sure firework at correct coordinate.

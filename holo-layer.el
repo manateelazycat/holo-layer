@@ -161,8 +161,8 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable cursor animation."
   :type 'boolean)
 
-(defcustom holo-layer-enable-cursor-firework nil
-  "Enable cursor firework."
+(defcustom holo-layer-enable-type-animation nil
+  "Enable type animation."
   :type 'boolean)
 
 (defcustom holo-layer-cursor-animation-color-gradient t

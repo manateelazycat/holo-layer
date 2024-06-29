@@ -37,7 +37,7 @@ from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
 from plugin.indent_line import IndentLine
-from plugin.firework import FireworkView
+from plugin.type_animation import TypeAnimation
 from pynput.keyboard import Listener as kbListener
 from PyQt6.QtGui import QGuiApplication, QPainterPath
 from utils import *
@@ -261,7 +261,7 @@ class HoloWindow(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.firework_view = FireworkView(self)
+        self.firework_view = TypeAnimation(self)
         layout.addWidget(self.firework_view)
 
         self.setLayout(layout)
