@@ -47,6 +47,7 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 
 ## 选项
 * holo-layer-enable-cursor-animation: 是否开启果冻光标的动画， 默认是关闭的
+* holo-layer-enable-cursor-firework: 是否开启光标烟花动画， 默认是关闭的
 * holo-layer-enable-indent-rainbow: 是否开启彩虹缩进功能， 默认是关闭的
 * holo-layer-enable-place-info: 在屏幕右上角显示光标处信息， 比如光标处单词的翻译， 默认关闭
 * holo-layer-enable-window-border: 显示窗口边框, 默认关闭

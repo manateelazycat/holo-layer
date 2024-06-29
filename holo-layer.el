@@ -161,6 +161,10 @@ Then Holo-Layer will start by gdb, please send new issue with `*holo-layer*' buf
   "Enable cursor animation."
   :type 'boolean)
 
+(defcustom holo-layer-enable-cursor-firework nil
+  "Enable cursor firework."
+  :type 'boolean)
+
 (defcustom holo-layer-cursor-animation-color-gradient t
   "Enable cursor color gradient."
   :type 'boolean)
@@ -509,6 +513,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 (defvar holo-layer-last-buffer-mode nil)
 (defvar holo-layer-last-window nil)
 
+(defun holo-layer-is-insert-command-p ()
+  (eq last-command 'self-insert-command))
+
 (defun holo-layer-monitor-cursor-change ()
   (when-let* ((cursor-info (ignore-errors (holo-layer-get-cursor-info)))
               (changed (and cursor-info
@@ -518,7 +525,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                holo-layer-cache-emacs-frame-info
                                holo-layer-cache-window-info
                                cursor-info
-                               (holo-layer-get-menu-info))
+                               (holo-layer-get-menu-info)
+                               (holo-layer-is-insert-command-p))
       (holo-layer-monitor-configuration-change))
     (setq holo-layer-last-cursor-info cursor-info)))
 
@@ -546,7 +554,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                emacs-frame-info
                                ""
                                ""
-                               (holo-layer-get-menu-info))
+                               (holo-layer-get-menu-info)
+                               (holo-layer-is-insert-command-p))
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
@@ -567,7 +576,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                  emacs-frame-info
                                  ""
                                  ""
-                                 (holo-layer-get-menu-info)))
+                                 (holo-layer-get-menu-info)
+                                 (holo-layer-is-insert-command-p)))
          ;; Support blink-search.
          ((and (require 'blink-search nil t)
                (equal (buffer-name (window-buffer current-window)) blink-search-input-buffer))
@@ -590,7 +600,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                    emacs-frame-info
                                    holo-layer-cache-window-info
                                    ""
-                                   (holo-layer-get-menu-info))))
+                                   (holo-layer-get-menu-info)
+                                   (holo-layer-is-insert-command-p))))
          ;; Normal window layout.
          (t
           (dolist (frame (frame-list))
@@ -604,7 +615,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                  emacs-frame-info
                                  holo-layer-cache-window-info
                                  ""
-                                 (holo-layer-get-menu-info))))
+                                 (holo-layer-get-menu-info)
+                                 (holo-layer-is-insert-command-p))))
         (setq holo-layer-cache-emacs-frame-info emacs-frame-info)
         ))))
 
@@ -818,7 +830,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                          (holo-layer-get-emacs-frame-info)
                          ""
                          ""
-                         (holo-layer-get-menu-info)))
+                         (holo-layer-get-menu-info)
+                         (holo-layer-is-insert-command-p)))
 
 (defun holo-layer-compare-windows (w1 w2)
   "Compare the positions of two windows. The upper bounds are compared first, and then the left bounds are compared if the upper bounds are the same."

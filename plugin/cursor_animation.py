@@ -144,9 +144,6 @@ class CursorAnimation(QObject):
 
     # draw a line cursor smoothly move from cs to ce
     def cursor_animation_draw_smooth_cursor(self, cs, ce, ws, hs, we, he, p):
-        diff = ce - cs
-        diff_x = diff.x()
-        diff_y = diff.y()
         start = [cs, cs + QPointF(ws, 0), cs + QPointF(ws, hs), cs + QPointF(0, hs)]
         end = [ce, ce + QPointF(we, 0), ce + QPointF(we, he), ce + QPointF(0, he)]
 

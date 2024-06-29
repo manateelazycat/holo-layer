@@ -23,6 +23,12 @@ import signal
 import sys
 import threading
 
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QPainter
+
+from PyQt6.QtCore import QRectF
+
 from epc.server import ThreadingEPCServer
 from plugin.cursor_animation import CursorAnimation
 from plugin.place_info import PlaceInfo
@@ -31,10 +37,9 @@ from plugin.window_border import WindowBorder
 from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
 from plugin.indent_line import IndentLine
+from plugin.firework import FireworkView
 from pynput.keyboard import Listener as kbListener
-from PyQt6.QtCore import Qt, QRectF
-from PyQt6.QtGui import QColor, QGuiApplication, QPainter, QPainterPath
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtGui import QGuiApplication, QPainterPath
 from utils import *
 
 class HoloLayer:
@@ -47,6 +52,7 @@ class HoloLayer:
         self.window_info = []
         self.cursor_info_args = None
         self.menu_info_args = None
+        self.is_insert_command = False
         self.cursor_info = []
         self.menu_info = []
         self.sort_tab_info = {}
@@ -81,7 +87,9 @@ class HoloLayer:
         # Pass epc port and webengine codec information to Emacs when first start holo-layer.
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
 
-    def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args, menu_info_args):
+    def update_window_info(self, emacs_frame_info, window_info_args, cursor_info_args, menu_info_args, is_insert_command):
+        self.is_insert_command = is_insert_command
+
         cursor_info_args = cursor_info_args if len(cursor_info_args) else ""
         window_info_args = window_info_args if len(window_info_args) else ""
         menu_info_args = menu_info_args if len(menu_info_args) else ""
@@ -119,7 +127,7 @@ class HoloLayer:
 
     @PostGui()
     def update(self):
-        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info, self.sort_tab_info)
+        self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info, self.sort_tab_info, self.is_insert_command)
 
     def update_place_info(self, word):
         self.holo_window.update_place_info(word)
@@ -251,6 +259,13 @@ class HoloWindow(QWidget):
         self.screen_geometry = self.screen.availableGeometry()
         self.setGeometry(self.screen_geometry)
 
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.firework_view = FireworkView(self)
+        layout.addWidget(self.firework_view)
+
+        self.setLayout(layout)
+
         self.show_up()
 
     def show_up(self):
@@ -340,7 +355,7 @@ class HoloWindow(QWidget):
         self.emacs_indent_infos = emacs_indent_infos
         self.update()
 
-    def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info):
+    def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info, is_insert_command):
         if emacs_frame_info:
             self.emacs_frame_info = emacs_frame_info.copy()
             self.emacs_frame_info[0] -= self.window_bias_x
@@ -354,6 +369,17 @@ class HoloWindow(QWidget):
             [x, y, w, h, is_active_window] = window_info[i]
             window_info[i] = [int(x), int(y), int(w), int(h), is_active_window]
         self.window_info = window_info
+
+        if is_insert_command and self.firework_view.enable_cursor_firework:
+            if len(cursor_info) > 1:
+                firework_x = int(cursor_info[0])
+                firework_y = int(cursor_info[1])
+
+                if len(emacs_frame_info) > 1:
+                    firework_x += emacs_frame_info[0]
+                    firework_y += emacs_frame_info[1]
+
+                self.firework_view.trigger_firework(firework_x, firework_y)
 
         if not self.cursor_animation.update_info(cursor_info, self.emacs_frame_info):
             # skip update if cursor position is changed.

@@ -47,6 +47,7 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 
 ## Options
 * holo-layer-enable-cursor-animation: Whether to enable the animation of the jelly cursor, it is off by default
+* holo-layer-enable-cursor-firework: Whether to enable the animation of the cursor firework, it is off by default
 * holo-layer-enable-indent-rainbow: Whehter to enable indent rainbow, it is off by default
 * holo-layer-enable-place-info: Display information at the cursor in the upper right corner of the screen, such as the translation of the word at the cursor, it is off by default
 * holo-layer-enable-window-border: Display window border, it is off by default
