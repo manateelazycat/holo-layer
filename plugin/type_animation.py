@@ -14,22 +14,28 @@ class BalloonParticle(QGraphicsItem):
         self.velocity = QPointF(random.uniform(-0.5, 0.5), random.uniform(-2, -1))
         self.opacity = 1.0
         self.size = random.uniform(10, 20)
+        self.string_opacity = 1.0
+        self.string_length = self.size * 1.5  # 增加线的长度
 
     def boundingRect(self):
-        return QRectF(-self.size/2, -self.size/2, self.size, self.size)
+        return QRectF(-self.size/2, -self.size/2, self.size, self.size + self.string_length)
 
     def paint(self, painter, option, widget):
+        # 绘制气球
         painter.setPen(QPen(self.color.darker(), 1))
         painter.setBrush(self.color)
         painter.setOpacity(self.opacity)
-        painter.drawEllipse(self.boundingRect())
+        painter.drawEllipse(QRectF(-self.size/2, -self.size/2, self.size, self.size))
 
-        # Draw balloon string
-        painter.drawLine(QPointF(0, self.size/2), QPointF(0, self.size))
+        # 绘制气球线
+        painter.setPen(QPen(Qt.GlobalColor.black, 1))
+        painter.setOpacity(self.string_opacity)
+        painter.drawLine(QPointF(0, self.size/2), QPointF(0, self.size/2 + self.string_length))
 
     def advance(self):
         self.setPos(self.pos() + self.velocity)
         self.opacity -= 0.01
+        self.string_opacity -= 0.015  # 线比气球消失得稍快
         if self.opacity <= 0:
             if self.scene():
                 self.scene().removeItem(self)
@@ -379,7 +385,6 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "supernova":
             supernova = Supernova(x, y)
             self.addItem(supernova)
-
 
 class TypeAnimation(QGraphicsView):
     def __init__(self, parent=None):
