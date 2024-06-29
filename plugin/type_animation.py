@@ -1,9 +1,70 @@
+from PyQt6.QtGui import QColor, QPen
 from PyQt6.QtCore import QPoint, QTimer, Qt, QPointF, QRectF
-from PyQt6.QtGui import QPainter, QColor, QRadialGradient
+from PyQt6.QtGui import QPainter, QRadialGradient
 from PyQt6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem
 import math
 import random
 from utils import *
+
+class LightningBolt(QGraphicsItem):
+    def __init__(self, start, end, branch_probability=0.3):
+        super().__init__()
+        self.start = start
+        self.end = end
+        self.branch_probability = branch_probability
+        self.segments = []
+        self.generate_lightning()
+        self.opacity = 1.0
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_lightning)
+        self.timer.start(10)
+
+    def generate_lightning(self):
+        self.segments = []
+        self.create_segment(self.start, self.end)
+
+    def create_segment(self, start, end):
+        if (end - start).manhattanLength() < 10:
+            self.segments.append((start, end))
+            return
+
+        mid = QPointF((start.x() + end.x()) / 2, (start.y() + end.y()) / 2)
+        displacement = QPointF(-(end.y() - start.y()), end.x() - start.x())
+        displacement *= (random.random() * 0.4 - 0.2)
+        mid += displacement
+
+        self.create_segment(start, mid)
+        self.create_segment(mid, end)
+
+        if random.random() < self.branch_probability:
+            branch_end = mid + (mid - start) * 0.7
+            branch_end += QPointF(random.random() * 20 - 10, random.random() * 20 - 10)
+            self.create_segment(mid, branch_end)
+
+    def boundingRect(self):
+        return QRectF(self.start, self.end).normalized().adjusted(-20, -20, 20, 20)
+
+    def paint(self, painter, option, widget):
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        main_color = QColor(200, 220, 255, int(255 * self.opacity))
+        painter.setPen(QPen(main_color, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        for start, end in self.segments:
+            painter.drawLine(start, end)
+
+        glow_color = QColor(220, 240, 255, int(100 * self.opacity))
+        painter.setPen(QPen(glow_color, 6, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        for start, end in self.segments:
+            painter.drawLine(start, end)
+
+    def update_lightning(self):
+        self.opacity -= 0.1
+        if self.opacity <= 0:
+            if self.scene():
+                self.scene().removeItem(self)
+            self.timer.stop()
+        self.update()
 
 class SupernovaParticle(QGraphicsItem):
     def __init__(self, color):
@@ -206,9 +267,19 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "flame":
             flame = Flame(x, y)
             self.addItem(flame)
+        elif style == "lightning":
+            angle = random.uniform(0, 2 * math.pi)
+            length = random.uniform(100, 200)
+            end_x = x + length * math.cos(angle)
+            end_y = y + length * math.sin(angle)
+            lightning = LightningBolt(QPointF(x, y), QPointF(end_x, end_y))
+            self.addItem(lightning)
         elif style == "supernova":
             supernova = Supernova(x, y)
             self.addItem(supernova)
+
+
+
 
 class TypeAnimation(QGraphicsView):
     def __init__(self, parent=None):
