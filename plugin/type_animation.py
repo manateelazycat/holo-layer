@@ -28,6 +28,72 @@ ROMANTIC_COLORS = [
     '#FFD700', # Gold
 ]
 
+class HexDigit(QGraphicsTextItem):
+    def __init__(self, pos, digit, direction):
+        super().__init__(digit)
+        self.setPos(pos)
+        self.direction = direction
+        self.speed = random.uniform(1, 3)
+        self.opacity = 1.0
+        self.lifetime = random.randint(20, 40)  # Frames the digit will live
+
+        font = QFont("Courier", 14)
+        font.setBold(True)
+        self.setFont(font)
+        self.setDefaultTextColor(QColor(0, 255, 0))
+
+    def advance(self):
+        new_pos = self.pos() + self.direction * self.speed
+        self.setPos(new_pos)
+        self.opacity -= 1 / self.lifetime
+        color = self.defaultTextColor()
+        color.setAlphaF(self.opacity)
+        self.setDefaultTextColor(color)
+        self.lifetime -= 1
+        return self.lifetime > 0
+
+class HexBurstEffect(QGraphicsItem):
+    def __init__(self, x, y, width, height):
+        super().__init__()
+        self.setPos(x, y - 120)
+        self.bounds = QRectF(0, 0, width, height)
+        self.digits = []
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_digits)
+        self.timer.start(33)  # Update about 30 times per second
+
+        self.create_burst()
+
+        QTimer.singleShot(2000, self.remove_effect)  # Remove effect after 2 seconds
+
+    def create_burst(self):
+        center = QPointF(self.bounds.width() / 2, self.bounds.height() / 2)
+        hex_chars = "0123456789ABCDEF"
+        for _ in range(20):  # Create 20 digits
+            angle = random.uniform(0, 2 * math.pi)
+            direction = QPointF(math.cos(angle), math.sin(angle))
+            digit = HexDigit(center, random.choice(hex_chars), direction)
+            digit.setParentItem(self)
+            self.digits.append(digit)
+
+    def boundingRect(self):
+        return self.bounds
+
+    def paint(self, painter, option, widget):
+        # The effect itself is invisible, only digits are visible
+        pass
+
+    def update_digits(self):
+        self.digits = [digit for digit in self.digits if digit.advance()]
+        if not self.digits:
+            self.remove_effect()
+
+    def remove_effect(self):
+        scene = self.scene()
+        if scene:
+            scene.removeItem(self)
+        self.timer.stop()
+
 class MatrixRainDrop(QGraphicsTextItem):
     def __init__(self, x, height):
         super().__init__()
@@ -626,6 +692,9 @@ class TypeAnimationScene(QGraphicsScene):
         elif style == "matrix":
             matrix_effect = MatrixRainEffect(x, y, 200, 200)  # 调整大小
             self.addItem(matrix_effect)
+        elif style == "hex":
+            hex_effect = HexBurstEffect(x, y, 100, 100)  # 调整大小
+            self.addItem(hex_effect)
         elif style == "firefly":
             firefly_effect = FireflyEffect(x, y, 50, 50)  # Adjust size as needed
             self.addItem(firefly_effect)
