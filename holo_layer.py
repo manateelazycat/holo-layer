@@ -255,6 +255,7 @@ class HoloWindow(QWidget):
         self.setStyleSheet("background-color:transparent;")
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
+        self.screen_index = 0
         self.screen = QGuiApplication.primaryScreen()
         self.screen_geometry = self.screen.availableGeometry()
         self.setGeometry(self.screen_geometry)
@@ -355,9 +356,21 @@ class HoloWindow(QWidget):
         self.emacs_indent_infos = emacs_indent_infos
         self.update()
 
+    def update_screen_geometry_info(self, screen_index):
+        if platform.system() != "Darwin":
+            return
+        if screen_index != self.screen_index:
+            self.screen_index = screen_index
+            self.screen = super().screen().virtualSiblings()[screen_index]
+            self.screen_geometry = self.screen.availableGeometry()
+            self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
+            self.setGeometry(self.screen_geometry)
+            self.move(self.window_bias_x, self.window_bias_y)
+   
     def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info, is_insert_command):
         if emacs_frame_info:
-            self.emacs_frame_info = emacs_frame_info.copy()
+            self.emacs_frame_info = emacs_frame_info[:4].copy()
+            self.update_screen_geometry_info(emacs_frame_info[4])
             self.emacs_frame_info[0] -= self.window_bias_x
             self.emacs_frame_info[1] -= self.window_bias_y
 
