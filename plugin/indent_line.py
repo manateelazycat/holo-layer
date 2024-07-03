@@ -22,7 +22,7 @@ class IndentLine(QObject):
                 # TODO only line indent is not enough to get indent line
                 # need add text objects info from lang parser
                 indents = [int(i) for i in indents.split(',')]
-                cursor_x, cursor_y, cursor_w, cursor_h = [int(i) for i in cursor_info.split(':')]
+                cursor_x, cursor_y, cursor_w, cursor_h = [int(i) for i in cursor_info.split(':')[:4]]
                 window_info = [int(i) for i in window_indent_info.split(':')[:4]]
 
                 x, y, w, h = window_info

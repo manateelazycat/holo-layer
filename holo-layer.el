@@ -504,7 +504,9 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (list (+ (car pos) (car external-border-size) (if (memq system-type '(cygwin windows-nt ms-dos)) 0 (car title-bar-size)))
           (+ (cadr pos) (cdr external-border-size) (cdr title-bar-size))
           width
-          height)))
+          height
+          (cl-position (frame-monitor-geometry) (display-monitor-attributes-list)
+                       :test (lambda (f attr) (equal f (cdr (car attr))))))))
 
 (defun holo-layer-eaf-fullscreen-p ()
   (and (featurep 'eaf)
