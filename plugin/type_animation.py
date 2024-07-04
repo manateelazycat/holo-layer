@@ -731,7 +731,7 @@ class TypeAnimation(QGraphicsView):
             "holo-layer-type-animation-style"
         ])
 
-    def trigger_firework(self, x, y):
+    def show(self, x, y):
         # It's important, we need call mapToScene to make sure firework at correct coordinate.
         point = QPoint(int(x), int(y))
         scene_pos = self.mapToScene(point)

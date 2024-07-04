@@ -262,8 +262,8 @@ class HoloWindow(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.firework_view = TypeAnimation(self)
-        layout.addWidget(self.firework_view)
+        self.type_animation = TypeAnimation(self)
+        layout.addWidget(self.type_animation)
 
         self.setLayout(layout)
 
@@ -383,16 +383,16 @@ class HoloWindow(QWidget):
             window_info[i] = [int(x), int(y), int(w), int(h), is_active_window]
         self.window_info = window_info
 
-        if is_insert_command and self.firework_view.enable_type_animation:
+        if is_insert_command and self.type_animation.enable_type_animation:
             if len(cursor_info) > 1:
-                firework_x = int(cursor_info[0])
-                firework_y = int(cursor_info[1])
+                type_animation_x = int(cursor_info[0])
+                type_animation_y = int(cursor_info[1])
 
                 if len(self.emacs_frame_info) > 1:
-                    firework_x += self.emacs_frame_info[0]
-                    firework_y += self.emacs_frame_info[1]
+                    type_animation_x += self.emacs_frame_info[0]
+                    type_animation_y += self.emacs_frame_info[1]
 
-                self.firework_view.trigger_firework(firework_x, firework_y)
+                self.type_animation.show(type_animation_x, type_animation_y)
 
         if not self.cursor_animation.update_info(cursor_info, self.emacs_frame_info):
             # skip update if cursor position is changed.
