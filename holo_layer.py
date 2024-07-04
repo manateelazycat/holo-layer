@@ -388,9 +388,9 @@ class HoloWindow(QWidget):
                 firework_x = int(cursor_info[0])
                 firework_y = int(cursor_info[1])
 
-                if len(emacs_frame_info) > 1:
-                    firework_x += emacs_frame_info[0]
-                    firework_y += emacs_frame_info[1]
+                if len(self.emacs_frame_info) > 1:
+                    firework_x += self.emacs_frame_info[0]
+                    firework_y += self.emacs_frame_info[1]
 
                 self.firework_view.trigger_firework(firework_x, firework_y)
 
