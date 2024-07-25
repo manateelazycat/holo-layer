@@ -409,6 +409,13 @@ class HoloWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet("""
+        QScrollBar:vertical, QScrollBar:horizontal {
+            width: 0px;
+            height: 0px;
+        }
+    """)
+
     HoloLayer(sys.argv[1:])
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
