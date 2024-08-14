@@ -104,6 +104,9 @@
                (holo-layer-epc-define-method mngr 'get-user-emacs-directory 'holo-layer--user-emacs-directory)
                (holo-layer-epc-define-method mngr 'get-emacs-id 'holo-layer--get-emacs-id)
                (holo-layer-epc-define-method mngr 'get-emacs-name 'holo-layer--get-emacs-name)
+               (holo-layer-epc-define-method mngr 'get-theme-mode 'holo-layer-get-theme-mode)
+               (holo-layer-epc-define-method mngr 'get-theme-foreground 'holo-layer-get-theme-foreground-color)
+               (holo-layer-epc-define-method mngr 'get-theme-background 'holo-layer-get-theme-background-color)
                ))))
     (if holo-layer-server
         (setq holo-layer-server-port (process-contact holo-layer-server :service))
@@ -202,14 +205,6 @@ If you set it with nil, cursor color will follow current state dynamically."
 (defcustom holo-layer-hide-mode-line nil
   "Hide mode-line if this option is enable."
   :type 'boolean)
-
-(defcustom holo-layer-place-info-text-color (face-foreground 'default)
-  "Place info color."
-  :type 'string)
-
-(defcustom holo-layer-place-info-background-color (face-background 'default)
-  "Place info color."
-  :type 'string)
 
 (defcustom holo-layer-place-info-font-size 18
   "Place info font size."

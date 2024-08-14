@@ -20,13 +20,9 @@ class PlaceInfo(QObject):
         self.padding_vertical = 10
 
         [self.show_info,
-         self.text_color,
-         self.background_color,
          self.font_size,
          self.search_dictionary] = get_emacs_vars([
             "holo-layer-enable-place-info",
-            "holo-layer-place-info-text-color",
-            "holo-layer-place-info-background-color",
             "holo-layer-place-info-font-size",
             "holo-layer-place-info-dictionary"])
 
@@ -36,10 +32,6 @@ class PlaceInfo(QObject):
         self.font = QFont()
         self.font.setFamily(self.font_family)
         self.font.setPointSize(self.font_size)
-
-        self.text_color = QColor(self.text_color)
-        self.background_color = QColor(QColor(self.background_color).darker().name())
-        self.background_color.setAlpha(220)
 
         if self.show_info:
             self.build_words_thread = threading.Thread(target=self.build_words)
@@ -97,6 +89,18 @@ class PlaceInfo(QObject):
 
     def draw(self, painter, window_info, emacs_frame_info, word):
         if self.show_info and len(window_info) > 0:
+            self.theme_mode = get_emacs_func_result("get-theme-mode")
+            self.text_color = get_emacs_func_result("get-theme-foreground")
+            self.background_color = get_emacs_func_result("get-theme-background")
+
+            self.text_color = QColor(self.text_color)
+            self.background_color = QColor(QColor(self.background_color).darker().name())
+
+            if self.theme_mode == "dark":
+                self.background_color.setAlpha(220)
+            else:
+                self.background_color.setAlpha(50)
+
             search_word = word if word in self.words else self.singular_word(word)
 
             if search_word and search_word in self.words:

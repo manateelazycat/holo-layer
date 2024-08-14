@@ -67,8 +67,6 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 * holo-layer-cursor-animation-color-gradient: 光标动画的渐变颜色， 默认开启
 * holo-layer-cursor-animation-color-gradient-start-value: 光标动画的渐变颜色的起始颜色， 会比光标背景色浅 50 个单位
 * holo-layer-type-animation-style: 光标敲击动画的风格， 可以设置为 `"flame"`,`"firework"`, `"firefly"`, `"matrix"`, `"supernova"`, `"lightning"`, `"balloon"`, `"water"`, `"hex"`, 默认是 `"flame"`
-* holo-layer-place-info-text-color: 光标处信息的文字颜色， 默认用的`default`的前景色
-* holo-layer-place-info-background-color: 光标处信息的背景颜色， 默认用的`default`的背景色
 * holo-layer-place-info-font-size: 光标处信息的字体大小， 默认是 18
 * holo-layer-window-number-color: 窗口跳转数字的颜色, 用 `holo-layer-jump-to-window` 命令跳转窗口
 * holo-layer-window-number-font-size: 窗口跳转数字的字体大小， 默认是 40

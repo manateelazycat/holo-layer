@@ -67,8 +67,6 @@ To modify the color of the svg icon, just add the `style="fill: hex-color"` attr
 * holo-layer-cursor-animation-color-gradient: Enable cursor color gradient, default is t
 * holo-layer-cursor-animation-color-gradient-start-value: The start value of gradient cursor color, start color is lighter 50 than cursor color
 * holo-layer-type-animation-style: Cursor type animation style, can be set to `"flame"`,`"firework"`, `"firefly"`, `"matrix"`, `"supernova"`, `"lightning"`, `"balloon"`, `"hex"`,default is `"flame"`
-* holo-layer-place-info-text-color: The text color of the information at the cursor, the default is the foreground color of `default`
-* holo-layer-place-info-background-color: The background color of the information at the cursor, the default is the background color of `default`
 * holo-layer-place-info-font-size: The font size of the information at the cursor, the default is 18
 * holo-layer-window-number-color: The color of the window jump number, use the `holo-layer-jump-to-window` command to jump windows
 * holo-layer-window-number-font-size: The font size of the window jump number, the default is 40
