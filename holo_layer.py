@@ -408,6 +408,11 @@ class HoloWindow(QWidget):
         self.update()
 
 if __name__ == "__main__":
+    if platform.system() == "Darwin":
+        import AppKit
+        info = AppKit.NSBundle.mainBundle().infoDictionary()
+        info["LSBackgroundOnly"] = "1"
+
     app = QApplication(sys.argv)
     app.setStyleSheet("""
         QScrollBar:vertical, QScrollBar:horizontal {
