@@ -799,7 +799,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (add-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
   (add-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
 
-  (add-hook 'window-state-change-hook #'holo-layer-monitor-fullscreen-state-change)
+  (when (eq system-type 'darwin)
+    (add-hook 'window-state-change-hook #'holo-layer-monitor-fullscreen-state-change))
 
   (advice-add #'other-frame :after #'holo-layer-monitor-frame-changed)
   (advice-add #'maximize-frame :after #'holo-layer-monitor-frame-changed)
@@ -832,7 +833,8 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   (remove-hook 'window-configuration-change-hook #'holo-layer-monitor-configuration-change)
   (remove-hook 'buffer-list-update-hook #'holo-layer-monitor-configuration-change)
 
-  (remove-hook 'window-state-change-hook #'holo-layer-monitor-fullscreen-state-change)
+  (when (eq system-type 'darwin)
+    (remove-hook 'window-state-change-hook #'holo-layer-monitor-fullscreen-state-change))
 
   (advice-remove #'other-frame #'holo-layer-monitor-frame-changed)
   (advice-remove #'maximize-frame #'holo-layer-monitor-frame-changed)
