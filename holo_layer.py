@@ -94,7 +94,14 @@ class HoloLayer:
         window_info_args = window_info_args if len(window_info_args) else ""
         menu_info_args = menu_info_args if len(menu_info_args) else ""
 
-        if window_info_args != self.window_info_args or menu_info_args != self.menu_info_args:
+        if emacs_frame_info != self.emacs_frame_info or window_info_args != self.window_info_args or menu_info_args != self.menu_info_args:
+            if platform.system() == "Darwin":
+                from AppKit import NSApplication
+                NSApp = NSApplication.sharedApplication()
+                windows = NSApp.windows()
+                if windows and len(windows) > 0:
+                    NSApp.windows()[0].makeKeyAndOrderFront_(None)
+
             self.window_info_args = window_info_args
             self.cursor_info_args = cursor_info_args
             self.emacs_frame_info = emacs_frame_info
