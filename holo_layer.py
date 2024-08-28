@@ -95,12 +95,6 @@ class HoloLayer:
         menu_info_args = menu_info_args if len(menu_info_args) else ""
 
         if emacs_frame_info != self.emacs_frame_info or window_info_args != self.window_info_args or menu_info_args != self.menu_info_args:
-            if platform.system() == "Darwin":
-                from AppKit import NSApplication
-                NSApp = NSApplication.sharedApplication()
-                windows = NSApp.windows()
-                if windows and len(windows) > 0:
-                    NSApp.windows()[0].makeKeyAndOrderFront_(None)
 
             self.window_info_args = window_info_args
             self.cursor_info_args = cursor_info_args
@@ -134,6 +128,13 @@ class HoloLayer:
 
     @PostGui()
     def update(self):
+        if platform.system() == "Darwin":
+            from AppKit import NSApplication
+            NSApp = NSApplication.sharedApplication()
+            windows = NSApp.windows()
+            if windows and len(windows) > 0:
+                NSApp.windows()[0].makeKeyAndOrderFront_(None)
+
         self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info, self.sort_tab_info, self.is_insert_command)
 
     def update_place_info(self, word):
@@ -373,7 +374,7 @@ class HoloWindow(QWidget):
             self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
             self.setGeometry(self.screen_geometry)
             self.move(self.window_bias_x, self.window_bias_y)
-   
+
     def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info, is_insert_command):
         if emacs_frame_info:
             self.emacs_frame_info = emacs_frame_info[:4].copy()
