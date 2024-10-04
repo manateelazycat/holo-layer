@@ -91,6 +91,10 @@
 
 (defvar holo-layer-server-port nil)
 
+(defvar holo-layer--sort-tab-is-load-p (require 'sort-tab nil t))
+
+(defvar holo-layer--blink-search-is-load-p (require 'blink-search nil t))
+
 (defun holo-layer--start-epc-server ()
   "Function to start the EPC server."
   (unless (process-live-p holo-layer-server)
@@ -485,7 +489,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defun holo-layer-is-normal-window-p (window)
   (not (or (minibufferp (window-buffer window))
-           (and (require 'sort-tab nil t)
+           (and holo-layer--sort-tab-is-load-p
                 (string-equal (buffer-name (window-buffer window)) sort-tab-buffer-name)))))
 
 (defun holo-layer-get-emacs-frame-info ()
@@ -591,7 +595,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                                  (holo-layer-get-menu-info)
                                  (holo-layer-is-insert-command-p)))
          ;; Support blink-search.
-         ((and (require 'blink-search nil t)
+         ((and holo-layer--blink-search-is-load-p
                (equal (buffer-name (window-buffer current-window)) blink-search-input-buffer))
           (let* ((top-window (get-buffer-window blink-search-start-buffer))
                  (top-window-info (holo-layer-get-window-info holo-layer-emacs-frame top-window current-window))
@@ -785,7 +789,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (add-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
   (when (and holo-layer-sort-tab-ui
-             (require 'sort-tab nil t))
+             holo-layer--sort-tab-is-load-p)
     (setq sort-tab-render-function 'holo-layer-render-sort-tab))
 
   (add-hook 'post-command-hook #'holo-layer-show-place-info)
@@ -819,7 +823,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (remove-hook 'post-command-hook #'holo-layer-monitor-cursor-change))
 
   (when (and holo-layer-sort-tab-ui
-             (require 'sort-tab nil t))
+             holo-layer--sort-tab-is-load-p)
     (setq sort-tab-render-function 'sort-tab-render-tabs))
 
   (remove-hook 'post-command-hook #'holo-layer-show-place-info)
