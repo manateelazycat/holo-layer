@@ -16,7 +16,10 @@ class WindowBorder(QObject):
                                                       "holo-layer-enable-window-border"])
 
         self.active_window_border_color = QColor(active_window_border_color)
-        self.inactive_window_border_color = QColor(inactive_window_border_color)
+
+        self.inactive_window_border_color = None
+        if inactive_window_border_color:
+            self.inactive_window_border_color = QColor(inactive_window_border_color)
 
     def draw(self, painter, window_info, emacs_frame_info):
         if self.enable_window_border and emacs_frame_info:
@@ -34,7 +37,7 @@ class WindowBorder(QObject):
                 for info in window_info:
                     [x, y, w, h, is_active_window] = info
 
-                    if is_active_window == "nil":
+                    if is_active_window == "nil" and self.inactive_window_border_color:
                         painter.setPen(self.inactive_window_border_color)
                         self.draw_window_border(painter, emacs_frame_info, info)
 
@@ -43,10 +46,19 @@ class WindowBorder(QObject):
                     [x, y, w, h, is_active_window] = info
 
                     if is_active_window == "t":
-                        painter.setPen(self.active_window_border_color)
-                        [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+                        pen = painter.pen()
+                        pen.setWidth(3)
+                        pen.setColor(self.active_window_border_color)
+                        painter.setPen(pen)
 
-                        painter.drawRect(x + emacs_x, y + emacs_y + h - 1, w, 1)
+                        [
+                            emacs_x,
+                            emacs_y,
+                            emacs_width,
+                            emacs_height,
+                        ] = emacs_frame_info
+
+                        painter.drawRect(x + emacs_x, y + emacs_y, w, h)
 
     def draw_window_border(self, painter, emacs_frame_info, info):
         [x, y, w, h, is_active_window] = info
