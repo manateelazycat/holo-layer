@@ -47,7 +47,7 @@ class WindowBorder(QObject):
 
                     if is_active_window == "t":
                         pen = painter.pen()
-                        pen.setWidth(3)
+                        pen.setWidth(2)
                         pen.setColor(self.active_window_border_color)
                         painter.setPen(pen)
 
@@ -58,7 +58,7 @@ class WindowBorder(QObject):
                             emacs_height,
                         ] = emacs_frame_info
 
-                        painter.drawRect(x + emacs_x, y + emacs_y, w, h)
+                        painter.drawRect(x + emacs_x, y + emacs_y, w, h - 2)
 
     def draw_window_border(self, painter, emacs_frame_info, info):
         [x, y, w, h, is_active_window] = info
