@@ -157,7 +157,7 @@ class MatrixRainEffect(QGraphicsItem):
             self.opacity = 0
         for drop in self.drops:
             color = drop.defaultTextColor()
-            color.setAlpha(int(255 * self.opacity))
+            color.setAlpha(int(255 * min(self.opacity, 1)))
             drop.setDefaultTextColor(color)
         self.update()
 
@@ -190,7 +190,7 @@ class Firefly(QGraphicsItem):
     def paint(self, painter, option, widget):
         gradient = QRadialGradient(0, 0, self.size)
         color = self.color.toRgb()
-        color.setAlpha(int(255 * self.opacity))
+        color.setAlpha(int(255 * min(self.opacity, 1)))
         gradient.setColorAt(0, color)
         gradient.setColorAt(1, Qt.GlobalColor.transparent)
         painter.setBrush(gradient)
