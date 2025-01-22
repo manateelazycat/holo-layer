@@ -360,7 +360,8 @@ class HoloWindow(QWidget):
 
         if self.place_word != word:
             self.place_word = word
-            self.update()
+
+        self.update()
 
     def update_indent_info(self, emacs_indent_infos):
         self.emacs_indent_infos = emacs_indent_infos

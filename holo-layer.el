@@ -782,6 +782,19 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                   (thing-at-point 'word t)))))
     (holo-layer-call-async "update_place_info" (if word word ""))))
 
+(setq holo-layer-place-info-last-buffer nil)
+
+(defun holo-layer-hide-place-info ()
+  "Only run when actually switching buffers"
+  (let ((current (current-buffer)))
+    (when (and holo-layer-place-info-last-buffer
+               (not (eq holo-layer-place-info-last-buffer current))
+               (not (minibufferp)))
+      (holo-layer-call-async "update_place_info" ""))
+    (setq holo-layer-place-info-last-buffer current)))
+
+(add-hook 'window-configuration-change-hook 'holo-layer-hide-place-info)
+
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
 
