@@ -794,6 +794,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (setq holo-layer-place-info-last-buffer current)))
 
 (add-hook 'window-configuration-change-hook 'holo-layer-hide-place-info)
+(add-hook 'minibuffer-exit-hook 'holo-layer-hide-place-info)
 
 (defun holo-layer-enable ()
   (add-hook 'post-command-hook #'holo-layer-start-process)
