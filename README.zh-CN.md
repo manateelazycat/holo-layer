@@ -83,6 +83,17 @@ windowrulev2 = noblur,title:(holo_layer.py)
 windowrulev2 = fakefullscreen,title:(holo_layer.py)
 ```
 
+## 兼容 Python 3.13
+Python 3.13 会让 pynput 项目产生 ```TypeError: '_thread._ThreadHandle' object is not callable``` 的错误。
+
+pynput master 分支暂时还没有修复这个问题， 可以通过下面的方法来安装修正补丁：
+
+```
+git clone -b fixup/listener-thread-handle https://github.com/moses-palmer/pynput.git
+cd pynput
+sudo pip3 install . --break
+```
+
 ## 反馈问题
 
 关于其他问题， 请用命令 `emacs -q` 并只添加 holo-layer 配置做一个对比测试， 如果 `emacs -q` 可以正常工作， 请检查你个人的配置文件。
