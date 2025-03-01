@@ -538,7 +538,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                             (not (equal cursor-info holo-layer-last-cursor-info)))))
     (if (and holo-layer-cache-emacs-frame-info holo-layer-cache-window-info)
         (holo-layer-call-async "update_window_info"
-                               holo-layer-cache-emacs-frame-info
+                               (or holo-layer-cache-emacs-frame-info (holo-layer-get-emacs-frame-info))
                                holo-layer-cache-window-info
                                cursor-info
                                (holo-layer-get-menu-info)
@@ -937,7 +937,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                            current-tab-name
                            (window-pixel-height sort-tab-window)
                            sort-tab-name-max-length
-                           holo-layer-cache-emacs-frame-info
+                           (or holo-layer-cache-emacs-frame-info (holo-layer-get-emacs-frame-info))
                            (holo-layer-get-theme-mode)
                            (holo-layer-get-theme-foreground-color)
                            (holo-layer-get-theme-background-color)
@@ -989,6 +989,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
            (= (point-at-eol) (point)))
       -1
     (current-column)))
+
+(defun holo-layer-enable-sort-tab ()
+  (setq holo-layer-sort-tab-ui t)
+  ;; Need call `holo-layer-start-process' immediately, otherwise we can't see sort-tab when Emacs start and nothing to touch.
+  (holo-layer-start-process))
 
 (provide 'holo-layer)
 

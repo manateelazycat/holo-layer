@@ -45,7 +45,7 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
 </p>
 
-需要先安装 [sort-tab](https://github.com/manateelazycat/sort-tab), 再打开选项 `holo-layer-sort-tab-ui`
+需要先安装 [sort-tab](https://github.com/manateelazycat/sort-tab), 再在配置中加上 `(holo-layer-enable-sort-tab)`
 
 所有图标都放在子目录 icon_cache 下面， 欢迎贡献你认为好看的图标， 图标可以从 https://devicon.dev 或 https://icons8.com/icons/set/programming-language 这样的网站去查找。
 

@@ -45,7 +45,7 @@ Note:
   <img style='height: auto; width: 80%; object-fit: contain' src="./demo/sort-tab-ui.png">
 </p>
 
-Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then enable option `holo-layer-sort-tab-ui`
+Need install [sort-tab](https://github.com/manateelazycat/sort-tab) first, then add `(holo-layer-enable-sort-tab)` in your config
 
 All icons are placed under the subdirectory `icon_cache`. You're welcome to contribute icons that you think look good. Icons can be found from websites such as https://devicon.dev or https://icons8.com/icons/set/programming-language.
 
