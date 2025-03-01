@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, Qt, QRectF, QMimeDatabase
-from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon
+from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QPainterPath
 
 from utils import *
 
@@ -57,16 +57,17 @@ class SortTab(QObject):
         self.mime_db = QMimeDatabase()
 
     def draw(self, painter, emacs_frame_info, sort_tab_info):
-        # Save painter to restore at last of draw function.
+        # Save current painting state
         painter.save()
-
-        # Draw tab line background.
+        
+        # Draw tab bar background
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
+            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+            
             # Get emacs theme colors.
             theme_mode = sort_tab_info["emacs_theme_mode"]
-            theme_foreground_color = sort_tab_info["emacs_theme_foreground_color"]
             theme_background_color = sort_tab_info["emacs_theme_background_color"]
-
+            
             # Create tab background color base on emacs background color.
             if theme_mode == "dark":
                 if theme_background_color == "#000000":
@@ -78,133 +79,248 @@ class SortTab(QObject):
                     tab_background_color = "#EEEEEE"
                 else:
                     tab_background_color = QColor(theme_background_color).darker(110).name()
-
-            # Create tab colors.
-            tab_active_text_color = theme_foreground_color
-            tab_active_background_color = theme_background_color
-
-            if theme_mode == "dark":
-                tab_inactive_text_color = QColor(tab_background_color).lighter(500).name()
-            else:
-                tab_inactive_text_color = QColor(tab_background_color).darker(300).name()
-
-            if theme_mode == "dark":
-                tab_inactive_background_color = QColor(tab_background_color).lighter(150).name()
-            else:
-                tab_inactive_background_color = QColor(tab_background_color).darker(110).name()
-
-            if theme_mode == "dark":
-                tab_spliter_color = QColor(tab_background_color).lighter(180).name()
-            else:
-                tab_spliter_color = QColor(tab_background_color).darker(130).name()
-
-            # Draw tab background.
-            [x, y, w, h] = emacs_frame_info
+            
+            tab_line_bg = QColor(tab_background_color)
+            
+            # Draw tab bar background
+            tab_height = sort_tab_info["tab_height"]
+            
+            painter.setBrush(tab_line_bg)
             painter.setPen(QColor(tab_background_color))
-            painter.setBrush(QColor(tab_background_color))
-            painter.drawRect(QRectF(x, y, w, sort_tab_info["tab_height"]))
-
+            painter.drawRect(QRectF(emacs_x, emacs_y, emacs_width, tab_height))
+        
+        # Use original condition: only draw tabs when tab info and frame info are available
         if "tab_names" in sort_tab_info and emacs_frame_info:
+            self.emacs_frame_info = emacs_frame_info
+            self.sort_tab_info = sort_tab_info
+            
+            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
             tab_names = sort_tab_info["tab_names"]
+            tab_modes = sort_tab_info["tab_modes"]
+            current_tab_index = sort_tab_info["current_tab_index"]
+            tab_height = sort_tab_info["tab_height"]
+            emacs_theme_mode = sort_tab_info["emacs_theme_mode"]
+            emacs_theme_background_color = sort_tab_info["emacs_theme_background_color"]
 
-            if len(tab_names) > 0:
-                # Set font.
-                painter.setFont(self.font)
-                metrics = QFontMetrics(self.font)
+            # Set font
+            font = QFont()
+            font.setPointSize(self.font_size)
+            painter.setFont(font)
+            font_metrics = QFontMetrics(font)
 
-                # Translate tab line along with scroll position.
-                current_tab_index = sort_tab_info["current_tab_index"]
-                current_tab_x_offset = x
-                for index, tab_name in enumerate(tab_names):
-                    # Calculate tab width and icon offset.
-                    tab_render_name = self.get_tab_render_name(tab_name)
-                    tab_width = metrics.horizontalAdvance(tab_render_name)
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
+            # Calculate width for each tab based on text length
+            tab_widths = []
+            total_width = 0
+            
+            for i, tab_name in enumerate(tab_names):
+                # Get tab icon information
+                mode_name = tab_modes[i]
+                icon_info = self.get_tab_icon_info(tab_name, mode_name)
+                icon_path, icon_offset = icon_info
+                
+                # Calculate text width
+                tab_text = self.get_tab_render_name(tab_name)
+                text_width = font_metrics.horizontalAdvance(tab_text)
+                
+                # Calculate total tab width = slope offset + left padding + icon width(if any) + text width + right padding + slope offset
+                tab_slope = 10  # Trapezoid slope horizontal offset
+                width = 2 * tab_slope + 2 * self.tab_padding_x + text_width
+                if icon_path and os.path.exists(icon_path):
+                    width += icon_offset
+                
+                # Ensure minimum width
+                min_width = 100
+                width = max(width, min_width)
+                
+                tab_widths.append(width)
+                total_width += width
 
-                    # Calculable tab edge offfset.
-                    tab_left_edge_x = current_tab_x_offset
-                    tab_right_edge_x = current_tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2
+            # Create tab colors based on Emacs theme colors
+            theme_foreground_color = sort_tab_info["emacs_theme_foreground_color"]
+            
+            # Active tab colors
+            active_tab_fg = QColor(theme_foreground_color)
+            active_tab_bg = QColor(emacs_theme_background_color)
+            
+            # Inactive tab colors
+            if emacs_theme_mode == "dark":
+                # For dark theme
+                inactive_tab_fg = QColor(tab_background_color).lighter(500)
+                inactive_tab_bg = QColor(tab_background_color).lighter(150)
+            else:
+                # For light theme
+                inactive_tab_fg = QColor(tab_background_color).darker(300)
+                inactive_tab_bg = QColor(tab_background_color).darker(105)
+            
+            # Set tab overlap amount
+            tab_overlap = 10  # Tabs overlap by 10 pixels
+            
+            # Calculate tab positions, considering overlap
+            tab_positions = [emacs_x]
+            for i in range(1, len(tab_widths)):
+                tab_positions.append(tab_positions[i-1] + tab_widths[i-1] - tab_overlap)
 
-                    # Only translate when touch current index.
-                    if index >= current_tab_index:
-                        [x, y, w, h] = emacs_frame_info
-
-                        if tab_left_edge_x < self.tab_scroll_pos:
-                            # Make sure tab in visible area if it out of screen left edge.
-                            self.tab_scroll_pos = max(tab_left_edge_x - self.tab_translate_offset, 0)
-                        elif tab_right_edge_x > self.tab_scroll_pos + w:
-                            # Make sure tab in visible area if it out of screen right edge.
-                            self.tab_scroll_pos = tab_right_edge_x - w + self.tab_translate_offset
-
-                        # Painter translate direction is a minus number.
-                        painter.translate(-self.tab_scroll_pos, 0)
-
-                        # Jump out loop after painter translate.
-                        break
-
-                    # Calculable tab render offset base on left tabs.
-                    current_tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
-
-                # Draw tabs.
-                tab_x_offset = x
-                for index, tab_name in enumerate(tab_names):
-                    # Get tab width and icon offset.
-                    tab_render_name = self.get_tab_render_name(tab_name)
-                    tab_width = metrics.horizontalAdvance(tab_render_name)
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
-
-                    # Draw tab background.
-                    if index == sort_tab_info["current_tab_index"]:
-                        painter.setPen(QColor(tab_active_background_color))
-                        painter.setBrush(QColor(tab_active_background_color))
-                    else:
-                        painter.setPen(QColor(tab_inactive_background_color))
-                        painter.setBrush(QColor(tab_inactive_background_color))
-
-                    painter.drawRect(QRectF(tab_x_offset, y, icon_offset + tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]))
-
-                    # Draw tab icon if tab has icon.
-                    if icon_path and os.path.exists(icon_path):
-                        icon = QIcon(icon_path)
-                        pixmap = icon.pixmap(self.tab_icon_size, self.tab_icon_size)
-                        icon_padding_y = 2
-                        painter.drawPixmap(tab_x_offset + self.tab_padding_x,
-                                           int((sort_tab_info["tab_height"] - self.tab_icon_size) / 2) + y + icon_padding_y,
-                                           pixmap)
-
-                    # Draw tab text.
-                    if index == sort_tab_info["current_tab_index"]:
-                        painter.setPen(QColor(tab_active_text_color))
-                        painter.setBrush(QColor(tab_active_text_color))
-                    else:
-                        painter.setPen(QColor(tab_inactive_text_color))
-                        painter.setBrush(QColor(tab_inactive_text_color))
-
-                    painter.drawText(QRectF(tab_x_offset + icon_offset, y, tab_width + self.tab_padding_x * 2, sort_tab_info["tab_height"]),
-                                     Qt.AlignmentFlag.AlignCenter,
-                                     tab_render_name)
-
-                    # Calculable tab render offset base on left tabs.
-                    tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
-
-                # Draw tab spliter, we can't draw tab spliter along with tab content, otherwhere tab spliter will override by next tab content.
-                tab_x_offset = x
-                for index, tab_name in enumerate(tab_names):
-                    # Get tab width and icon offset.
-                    tab_render_name = self.get_tab_render_name(tab_name)
-                    tab_width = metrics.horizontalAdvance(tab_render_name)
-                    (icon_path, icon_offset) = self.get_tab_icon_info(tab_name, sort_tab_info["tab_modes"][index])
-
-                    # Draw tab spliter.
-                    if index != len(tab_names) - 1:
-                        painter.setPen(QColor(tab_spliter_color))
-                        painter.setBrush(QColor(tab_spliter_color))
-                        painter.drawRect(QRectF(tab_x_offset + icon_offset + tab_width + self.tab_padding_x * 2, y, 1, sort_tab_info["tab_height"]))
-
-                    # Calculable tab render offset base on left tabs.
-                    tab_x_offset += icon_offset + tab_width + self.tab_padding_x * 2
-
-        # Restore painter.
+            # Draw tabs - Chrome-style rounded trapezoid
+            # Ensure the current selected tab is visible
+            if current_tab_index >= 0:
+                current_tab_start = tab_positions[current_tab_index]
+                current_tab_end = current_tab_start + tab_widths[current_tab_index]
+                
+                # If current tab is not in visible area, adjust scroll position
+                if current_tab_start < emacs_x + self.tab_scroll_pos:
+                    self.tab_scroll_pos = current_tab_start - emacs_x
+                elif current_tab_end > emacs_x + emacs_width + self.tab_scroll_pos:
+                    self.tab_scroll_pos = current_tab_end - emacs_x - emacs_width
+            
+            # First draw inactive tabs, then draw the active tab to ensure it appears on top
+            # First pass: draw all inactive tabs
+            for i, tab_name in enumerate(tab_names):
+                if i == current_tab_index:
+                    continue  # Skip current tab, will draw it later
+                
+                # Consider scroll position
+                x = tab_positions[i] - self.tab_scroll_pos
+                y = emacs_y
+                mode_name = tab_modes[i]
+                tab_width = tab_widths[i]
+                
+                # If tab is completely outside visible area, skip drawing
+                if x + tab_width < emacs_x or x > emacs_x + emacs_width:
+                    continue
+                
+                # Set inactive tab colors
+                painter.setBrush(inactive_tab_bg)
+                painter.setPen(inactive_tab_fg)
+                
+                # Get tab icon information
+                icon_info = self.get_tab_icon_info(tab_name, mode_name)
+                icon_path, icon_offset = icon_info
+                
+                # Create trapezoid path
+                path = QPainterPath()
+                
+                # Trapezoid parameters
+                tab_slope = 10  # Trapezoid slope horizontal offset
+                corner_radius = 8  # Corner radius
+                
+                # Draw trapezoid path (with rounded corners)
+                # Top-left rounded corner
+                path.moveTo(x + tab_slope + corner_radius, y)
+                # Top-right rounded corner
+                path.lineTo(x + tab_width - tab_slope - corner_radius, y)
+                path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
+                # Bottom-right - straight to bottom, no border
+                path.lineTo(x + tab_width, y + tab_height)
+                # Bottom-left - straight to bottom, no border
+                path.lineTo(x, y + tab_height)
+                # Top-left rounded corner
+                path.lineTo(x + tab_slope, y + corner_radius)
+                path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
+                
+                # Fill trapezoid, no border
+                # Set no border
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawPath(path)
+                
+                # Restore text color
+                painter.setPen(inactive_tab_fg)
+                
+                # Draw icon
+                if icon_path and os.path.exists(icon_path):
+                    icon = QIcon(icon_path)
+                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
+                                      y + (tab_height - self.tab_icon_size) / 2,
+                                      self.tab_icon_size, 
+                                      self.tab_icon_size)
+                    icon.paint(painter, icon_rect.toRect())
+                
+                # Draw tab text
+                text_left = x + tab_slope + self.tab_padding_x
+                if icon_path and os.path.exists(icon_path):
+                    text_left += icon_offset
+                
+                text_width = (x + tab_width - tab_slope) - text_left - self.tab_padding_x
+                text_rect = QRectF(text_left, y, text_width, tab_height)
+                
+                tab_text = self.get_tab_render_name(tab_name)
+                painter.drawText(text_rect, 
+                                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter, 
+                                tab_text)
+            
+            # Second pass: draw only the active tab to ensure it's on top
+            if current_tab_index >= 0:
+                tab_name = tab_names[current_tab_index]
+                x = tab_positions[current_tab_index] - self.tab_scroll_pos
+                y = emacs_y
+                mode_name = tab_modes[current_tab_index]
+                tab_width = tab_widths[current_tab_index]
+                
+                # If tab is completely outside visible area, skip drawing
+                if x + tab_width < emacs_x or x > emacs_x + emacs_width:
+                    # Restore painting state
+                    painter.restore()
+                    return
+                
+                # Set active tab colors
+                painter.setBrush(active_tab_bg)
+                painter.setPen(active_tab_fg)
+                
+                # Get tab icon information
+                icon_info = self.get_tab_icon_info(tab_name, mode_name)
+                icon_path, icon_offset = icon_info
+                
+                # Create trapezoid path
+                path = QPainterPath()
+                
+                # Trapezoid parameters
+                tab_slope = 10  # Trapezoid slope horizontal offset
+                corner_radius = 8  # Corner radius
+                
+                # Draw trapezoid path (with rounded corners)
+                # Top-left rounded corner
+                path.moveTo(x + tab_slope + corner_radius, y)
+                # Top-right rounded corner
+                path.lineTo(x + tab_width - tab_slope - corner_radius, y)
+                path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
+                # Bottom-right - straight to bottom, no border
+                path.lineTo(x + tab_width, y + tab_height)
+                # Bottom-left - straight to bottom, no border
+                path.lineTo(x, y + tab_height)
+                # Top-left rounded corner
+                path.lineTo(x + tab_slope, y + corner_radius)
+                path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
+                
+                # Fill trapezoid, no border
+                # Set no border
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawPath(path)
+                
+                # Restore text color
+                painter.setPen(active_tab_fg)
+                
+                # Draw icon
+                if icon_path and os.path.exists(icon_path):
+                    icon = QIcon(icon_path)
+                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
+                                      y + (tab_height - self.tab_icon_size) / 2,
+                                      self.tab_icon_size, 
+                                      self.tab_icon_size)
+                    icon.paint(painter, icon_rect.toRect())
+                
+                # Draw tab text
+                text_left = x + tab_slope + self.tab_padding_x
+                if icon_path and os.path.exists(icon_path):
+                    text_left += icon_offset
+                
+                text_width = (x + tab_width - tab_slope) - text_left - self.tab_padding_x
+                text_rect = QRectF(text_left, y, text_width, tab_height)
+                
+                tab_text = self.get_tab_render_name(tab_name)
+                painter.drawText(text_rect, 
+                                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter, 
+                                tab_text)
+        
+        # Restore painting state
         painter.restore()
 
     def get_tab_render_name(self, tab_name):
