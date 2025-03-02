@@ -61,6 +61,16 @@ class SortTab(QObject):
         # Save current painting state
         painter.save()
         
+        # Get the device pixel ratio for this painter
+        device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
+        
+        # Adjust padding based on device pixel ratio for high DPI displays
+        adjusted_padding_x = self.tab_padding_x
+        adjusted_icon_padding = self.tab_icon_padding_right
+        if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
+            adjusted_padding_x = self.tab_padding_x / device_pixel_ratio
+            adjusted_icon_padding = self.tab_icon_padding_right / device_pixel_ratio
+        
         # Draw tab bar background
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
             [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
@@ -125,9 +135,13 @@ class SortTab(QObject):
                 
                 # Calculate total tab width = slope offset + left padding + icon width(if any) + text width + right padding + slope offset
                 tab_slope = 10  # Trapezoid slope horizontal offset
-                width = 2 * tab_slope + 2 * self.tab_padding_x + text_width
+                width = 2 * tab_slope + 2 * adjusted_padding_x + text_width
                 if icon_path and os.path.exists(icon_path):
-                    width += icon_offset
+                    # Adjust icon offset based on device pixel ratio
+                    adjusted_icon_offset = icon_offset
+                    if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
+                        adjusted_icon_offset = icon_offset / device_pixel_ratio
+                    width += adjusted_icon_offset
                 
                 # Ensure minimum width
                 min_width = 100
@@ -236,7 +250,7 @@ class SortTab(QObject):
                     icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
                     # Center the icon vertically
                     icon_y = y + (tab_height - icon_size) / 2
-                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x,
+                    icon_rect = QRectF(x + tab_slope + adjusted_padding_x,
                                       icon_y,
                                       icon_size,
                                       icon_size)
@@ -244,11 +258,11 @@ class SortTab(QObject):
                     icon.paint(painter, icon_rect.toRect())
                 
                 # Draw tab text
-                text_left = x + tab_slope + self.tab_padding_x
+                text_left = x + tab_slope + adjusted_padding_x
                 if icon_path and os.path.exists(icon_path):
-                    text_left += icon_offset
+                    text_left += adjusted_icon_offset
                 
-                text_width = (x + tab_width - tab_slope) - text_left - self.tab_padding_x
+                text_width = (x + tab_width - tab_slope) - text_left - adjusted_padding_x
                 text_rect = QRectF(text_left, y, text_width, tab_height)
                 
                 tab_text = self.get_tab_render_name(tab_name)
@@ -317,7 +331,7 @@ class SortTab(QObject):
                     icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
                     # Center the icon vertically
                     icon_y = y + (tab_height - icon_size) / 2
-                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x,
+                    icon_rect = QRectF(x + tab_slope + adjusted_padding_x,
                                       icon_y,
                                       icon_size,
                                       icon_size)
@@ -325,11 +339,11 @@ class SortTab(QObject):
                     icon.paint(painter, icon_rect.toRect())
                 
                 # Draw tab text
-                text_left = x + tab_slope + self.tab_padding_x
+                text_left = x + tab_slope + adjusted_padding_x
                 if icon_path and os.path.exists(icon_path):
-                    text_left += icon_offset
+                    text_left += adjusted_icon_offset
                 
-                text_width = (x + tab_width - tab_slope) - text_left - self.tab_padding_x
+                text_width = (x + tab_width - tab_slope) - text_left - adjusted_padding_x
                 text_rect = QRectF(text_left, y, text_width, tab_height)
                 
                 tab_text = self.get_tab_render_name(tab_name)
@@ -367,12 +381,8 @@ class SortTab(QObject):
 
         # Return icon info.
         if os.path.exists(icon_path):
-            # Calculate icon offset based on platform
-            if platform.system() == "Darwin":
-                # For macOS, use a smaller offset to prevent icons from being too large
-                icon_offset = self.tab_icon_size + self.tab_icon_padding_right
-            else:
-                icon_offset = self.tab_icon_size + self.tab_icon_padding_right
+            # Use standard icon offset, will be adjusted for device pixel ratio when drawing
+            icon_offset = self.tab_icon_size + self.tab_icon_padding_right
             return (icon_path, icon_offset)
         else:
             # Print mime information if not found icon in cache directory.
