@@ -227,22 +227,30 @@ class SortTab(QObject):
                 tab_slope = 10  # Trapezoid slope horizontal offset
                 corner_radius = 8  # Corner radius
                 
+                # Adjust parameters for high DPI displays
+                if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
+                    # Make sure all values are properly scaled for high DPI
+                    tab_slope = tab_slope / device_pixel_ratio
+                    corner_radius = corner_radius / device_pixel_ratio
+                
                 # Draw trapezoid path (with rounded corners)
                 # Top-left rounded corner
-                path.moveTo(x + tab_slope + corner_radius, y)
+                path.moveTo(float(x + tab_slope + corner_radius), float(y))
                 # Top-right rounded corner
-                path.lineTo(x + tab_width - tab_slope - corner_radius, y)
-                path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
+                path.lineTo(float(x + tab_width - tab_slope - corner_radius), float(y))
+                path.arcTo(float(x + tab_width - tab_slope - corner_radius * 2), float(y), 
+                           float(corner_radius * 2), float(corner_radius * 2), 90, -90)
                 # Bottom-right - straight to bottom, no border
                 gap_fix = 1
                 if device_pixel_ratio > 1.0:
                     gap_fix = device_pixel_ratio
-                path.lineTo(x + tab_width, y + tab_height + gap_fix)
+                path.lineTo(float(x + tab_width), float(y + tab_height + gap_fix))
                 # Bottom-left - straight to bottom, no border
-                path.lineTo(x, y + tab_height + gap_fix)
+                path.lineTo(float(x), float(y + tab_height + gap_fix))
                 # Top-left rounded corner
-                path.lineTo(x + tab_slope, y + corner_radius)
-                path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
+                path.lineTo(float(x + tab_slope), float(y + corner_radius))
+                path.arcTo(float(x + tab_slope), float(y), 
+                           float(corner_radius * 2), float(corner_radius * 2), 180, -90)
                 
                 # Fill trapezoid, no border
                 # Set no border
@@ -311,22 +319,30 @@ class SortTab(QObject):
                 tab_slope = 10  # Trapezoid slope horizontal offset
                 corner_radius = 8  # Corner radius
                 
+                # Adjust parameters for high DPI displays
+                if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
+                    # Make sure all values are properly scaled for high DPI
+                    tab_slope = tab_slope / device_pixel_ratio
+                    corner_radius = corner_radius / device_pixel_ratio
+                
                 # Draw trapezoid path (with rounded corners)
                 # Top-left rounded corner
-                path.moveTo(x + tab_slope + corner_radius, y)
+                path.moveTo(float(x + tab_slope + corner_radius), float(y))
                 # Top-right rounded corner
-                path.lineTo(x + tab_width - tab_slope - corner_radius, y)
-                path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
+                path.lineTo(float(x + tab_width - tab_slope - corner_radius), float(y))
+                path.arcTo(float(x + tab_width - tab_slope - corner_radius * 2), float(y), 
+                           float(corner_radius * 2), float(corner_radius * 2), 90, -90)
                 # Bottom-right - straight to bottom, no border
                 gap_fix = 1
                 if device_pixel_ratio > 1.0:
                     gap_fix = device_pixel_ratio
-                path.lineTo(x + tab_width, y + tab_height + gap_fix)
+                path.lineTo(float(x + tab_width), float(y + tab_height + gap_fix))
                 # Bottom-left - straight to bottom, no border
-                path.lineTo(x, y + tab_height + gap_fix)
+                path.lineTo(float(x), float(y + tab_height + gap_fix))
                 # Top-left rounded corner
-                path.lineTo(x + tab_slope, y + corner_radius)
-                path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
+                path.lineTo(float(x + tab_slope), float(y + corner_radius))
+                path.arcTo(float(x + tab_slope), float(y), 
+                           float(corner_radius * 2), float(corner_radius * 2), 180, -90)
                 
                 # Fill trapezoid, no border
                 # Set no border
