@@ -69,15 +69,8 @@ class SortTab(QObject):
         if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
             adjusted_padding_x = self.tab_padding_x / device_pixel_ratio
 
-        # Draw tab bar background
-        if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
-            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
-            
-            # Get emacs theme colors.
-            theme_mode = sort_tab_info["emacs_theme_mode"]
-            theme_background_color = sort_tab_info["emacs_theme_background_color"]
-            
-            # Create tab background color base on emacs background color.
+        # Helper function to get tab colors based on theme
+        def get_tab_colors(theme_mode, theme_background_color):
             if theme_mode == "dark":
                 if theme_background_color == "#000000":
                     tab_background_color = "#333333"
@@ -88,6 +81,18 @@ class SortTab(QObject):
                     tab_background_color = "#EEEEEE"
                 else:
                     tab_background_color = QColor(theme_background_color).darker(110).name()
+            return tab_background_color
+        
+        # Draw tab bar background
+        if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
+            [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
+            
+            # Get emacs theme colors.
+            theme_mode = sort_tab_info["emacs_theme_mode"]
+            theme_background_color = sort_tab_info["emacs_theme_background_color"]
+            
+            # Get tab background color
+            tab_background_color = get_tab_colors(theme_mode, theme_background_color)
             
             tab_line_bg = QColor(tab_background_color)
             
@@ -122,21 +127,8 @@ class SortTab(QObject):
             emacs_theme_mode = sort_tab_info["emacs_theme_mode"]
             emacs_theme_background_color = sort_tab_info["emacs_theme_background_color"]
 
-            # Get emacs theme colors.
-            theme_mode = sort_tab_info["emacs_theme_mode"]
-            theme_background_color = sort_tab_info["emacs_theme_background_color"]
-
-            # Create tab background color base on emacs background color.
-            if theme_mode == "dark":
-                if theme_background_color == "#000000":
-                    tab_background_color = "#333333"
-                else:
-                    tab_background_color = QColor(theme_background_color).darker(120).name()
-            else:
-                if theme_background_color == "#FFFFFF":
-                    tab_background_color = "#EEEEEE"
-                else:
-                    tab_background_color = QColor(theme_background_color).darker(110).name()
+            # Get tab background color
+            tab_background_color = get_tab_colors(emacs_theme_mode, emacs_theme_background_color)
 
             # Set font
             font = QFont()
@@ -202,7 +194,7 @@ class SortTab(QObject):
 
             # Draw tabs - Chrome-style rounded trapezoid
             # Ensure the current selected tab is visible
-            if current_tab_index >= 0:
+            if current_tab_index >= 0 and current_tab_index < len(tab_widths):
                 current_tab_start = tab_positions[current_tab_index]
                 current_tab_end = current_tab_start + tab_widths[current_tab_index]
                 
@@ -239,34 +231,8 @@ class SortTab(QObject):
                 # Create trapezoid path
                 path = QPainterPath()
                 
-                # Trapezoid parameters
-                tab_slope = 10  # Trapezoid slope horizontal offset
-                corner_radius = 8  # Corner radius
-                
-                # Adjust parameters for high DPI displays
-                if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
-                    # Make sure all values are properly scaled for high DPI
-                    tab_slope = tab_slope / device_pixel_ratio
-                    corner_radius = corner_radius / device_pixel_ratio
-                
-                # Draw trapezoid path (with rounded corners)
-                # Top-left rounded corner
-                path.moveTo(float(x + tab_slope + corner_radius), float(y))
-                # Top-right rounded corner
-                path.lineTo(float(x + tab_width - tab_slope - corner_radius), float(y))
-                path.arcTo(float(x + tab_width - tab_slope - corner_radius * 2), float(y), 
-                           float(corner_radius * 2), float(corner_radius * 2), 90, -90)
-                # Bottom-right - straight to bottom, no border
-                gap_fix = 1
-                if device_pixel_ratio > 1.0:
-                    gap_fix = device_pixel_ratio
-                path.lineTo(float(x + tab_width), float(y + tab_height + gap_fix))
-                # Bottom-left - straight to bottom, no border
-                path.lineTo(float(x), float(y + tab_height + gap_fix))
-                # Top-left rounded corner
-                path.lineTo(float(x + tab_slope), float(y + corner_radius))
-                path.arcTo(float(x + tab_slope), float(y), 
-                           float(corner_radius * 2), float(corner_radius * 2), 180, -90)
+                # Draw the tab trapezoid
+                tab_slope = self.draw_tab_trapezoid(path, x, y, tab_width, tab_height, device_pixel_ratio)
                 
                 # Fill trapezoid, no border
                 # Set no border
@@ -276,26 +242,12 @@ class SortTab(QObject):
                 # Restore text color
                 painter.setPen(inactive_tab_fg)
                 
-                # Draw icon
-                if icon_path and os.path.exists(icon_path):
-                    icon = QIcon(icon_path)
-
-                    # Get the device pixel ratio
-                    device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
-                    # Adjust icon size based on device pixel ratio
-                    icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
-                    # Center the icon vertically
-                    icon_y = y + (tab_height - icon_size) / 2
-                    icon_rect = QRectF(x + tab_slope + adjusted_padding_x,
-                                      icon_y,
-                                      icon_size,
-                                      icon_size)
-
-                    icon.paint(painter, icon_rect.toRect())
+                # Draw the tab icon
+                has_icon = self.draw_tab_icon(painter, icon_path, x, y, tab_height, tab_slope, adjusted_padding_x, device_pixel_ratio)
                 
                 # Draw tab text
                 text_left = x + tab_slope + adjusted_padding_x
-                if icon_path and os.path.exists(icon_path):
+                if has_icon:
                     text_left += adjusted_icon_offset
                 
                 text_width = (x + tab_width - tab_slope) - text_left - adjusted_padding_x
@@ -307,7 +259,7 @@ class SortTab(QObject):
                                 tab_text)
             
             # Second pass: draw only the active tab to ensure it's on top
-            if current_tab_index >= 0:
+            if current_tab_index >= 0 and current_tab_index < len(tab_widths):
                 tab_name = tab_names[current_tab_index]
                 x = tab_positions[current_tab_index] - self.tab_scroll_pos
                 y = emacs_y
@@ -331,34 +283,8 @@ class SortTab(QObject):
                 # Create trapezoid path
                 path = QPainterPath()
                 
-                # Trapezoid parameters
-                tab_slope = 10  # Trapezoid slope horizontal offset
-                corner_radius = 8  # Corner radius
-                
-                # Adjust parameters for high DPI displays
-                if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
-                    # Make sure all values are properly scaled for high DPI
-                    tab_slope = tab_slope / device_pixel_ratio
-                    corner_radius = corner_radius / device_pixel_ratio
-                
-                # Draw trapezoid path (with rounded corners)
-                # Top-left rounded corner
-                path.moveTo(float(x + tab_slope + corner_radius), float(y))
-                # Top-right rounded corner
-                path.lineTo(float(x + tab_width - tab_slope - corner_radius), float(y))
-                path.arcTo(float(x + tab_width - tab_slope - corner_radius * 2), float(y), 
-                           float(corner_radius * 2), float(corner_radius * 2), 90, -90)
-                # Bottom-right - straight to bottom, no border
-                gap_fix = 1
-                if device_pixel_ratio > 1.0:
-                    gap_fix = device_pixel_ratio
-                path.lineTo(float(x + tab_width), float(y + tab_height + gap_fix))
-                # Bottom-left - straight to bottom, no border
-                path.lineTo(float(x), float(y + tab_height + gap_fix))
-                # Top-left rounded corner
-                path.lineTo(float(x + tab_slope), float(y + corner_radius))
-                path.arcTo(float(x + tab_slope), float(y), 
-                           float(corner_radius * 2), float(corner_radius * 2), 180, -90)
+                # Draw the tab trapezoid
+                tab_slope = self.draw_tab_trapezoid(path, x, y, tab_width, tab_height, device_pixel_ratio)
                 
                 # Fill trapezoid, no border
                 # Set no border
@@ -368,26 +294,12 @@ class SortTab(QObject):
                 # Restore text color
                 painter.setPen(active_tab_fg)
                 
-                # Draw icon
-                if icon_path and os.path.exists(icon_path):
-                    icon = QIcon(icon_path)
-
-                    # Get the device pixel ratio
-                    device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
-                    # Adjust icon size based on device pixel ratio
-                    icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
-                    # Center the icon vertically
-                    icon_y = y + (tab_height - icon_size) / 2
-                    icon_rect = QRectF(x + tab_slope + adjusted_padding_x,
-                                      icon_y,
-                                      icon_size,
-                                      icon_size)
-
-                    icon.paint(painter, icon_rect.toRect())
+                # Draw the tab icon
+                has_icon = self.draw_tab_icon(painter, icon_path, x, y, tab_height, tab_slope, adjusted_padding_x, device_pixel_ratio)
                 
                 # Draw tab text
                 text_left = x + tab_slope + adjusted_padding_x
-                if icon_path and os.path.exists(icon_path):
+                if has_icon:
                     text_left += adjusted_icon_offset
                 
                 text_width = (x + tab_width - tab_slope) - text_left - adjusted_padding_x
@@ -435,3 +347,54 @@ class SortTab(QObject):
             # Print mime information if not found icon in cache directory.
             print("***** ", tab_name, mode_name, mime)
             return (None, 0)
+
+    # Helper function to draw tab trapezoid
+    def draw_tab_trapezoid(self, path, x, y, tab_width, tab_height, device_pixel_ratio):
+        # Trapezoid parameters
+        tab_slope = 10  # Trapezoid slope horizontal offset
+        corner_radius = 8  # Corner radius
+        
+        # Adjust parameters for high DPI displays
+        if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
+            # Make sure all values are properly scaled for high DPI
+            tab_slope = tab_slope / device_pixel_ratio
+            corner_radius = corner_radius / device_pixel_ratio
+        
+        # Draw trapezoid path (with rounded corners)
+        # Top-left rounded corner
+        path.moveTo(float(x + tab_slope + corner_radius), float(y))
+        # Top-right rounded corner
+        path.lineTo(float(x + tab_width - tab_slope - corner_radius), float(y))
+        path.arcTo(float(x + tab_width - tab_slope - corner_radius * 2), float(y), 
+                   float(corner_radius * 2), float(corner_radius * 2), 90, -90)
+        # Bottom-right - straight to bottom, no border
+        gap_fix = 1
+        if device_pixel_ratio > 1.0:
+            gap_fix = device_pixel_ratio
+        path.lineTo(float(x + tab_width), float(y + tab_height + gap_fix))
+        # Bottom-left - straight to bottom, no border
+        path.lineTo(float(x), float(y + tab_height + gap_fix))
+        # Top-left rounded corner
+        path.lineTo(float(x + tab_slope), float(y + corner_radius))
+        path.arcTo(float(x + tab_slope), float(y), 
+                   float(corner_radius * 2), float(corner_radius * 2), 180, -90)
+        
+        return tab_slope
+
+    # Helper function to draw tab icon
+    def draw_tab_icon(self, painter, icon_path, x, y, tab_height, tab_slope, adjusted_padding_x, device_pixel_ratio):
+        if icon_path and os.path.exists(icon_path):
+            icon = QIcon(icon_path)
+
+            # Adjust icon size based on device pixel ratio
+            icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
+            # Center the icon vertically
+            icon_y = y + (tab_height - icon_size) / 2
+            icon_rect = QRectF(x + tab_slope + adjusted_padding_x,
+                              icon_y,
+                              icon_size,
+                              icon_size)
+
+            icon.paint(painter, icon_rect.toRect())
+            return True
+        return False
