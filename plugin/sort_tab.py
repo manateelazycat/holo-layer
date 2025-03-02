@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, Qt, QRectF, QMimeDatabase
-from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QPainterPath, QPainter, QBrush
+from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QPainterPath
 
 from utils import *
 
@@ -121,6 +121,22 @@ class SortTab(QObject):
             tab_height = sort_tab_info["tab_height"]
             emacs_theme_mode = sort_tab_info["emacs_theme_mode"]
             emacs_theme_background_color = sort_tab_info["emacs_theme_background_color"]
+
+            # Get emacs theme colors.
+            theme_mode = sort_tab_info["emacs_theme_mode"]
+            theme_background_color = sort_tab_info["emacs_theme_background_color"]
+
+            # Create tab background color base on emacs background color.
+            if theme_mode == "dark":
+                if theme_background_color == "#000000":
+                    tab_background_color = "#333333"
+                else:
+                    tab_background_color = QColor(theme_background_color).darker(120).name()
+            else:
+                if theme_background_color == "#FFFFFF":
+                    tab_background_color = "#EEEEEE"
+                else:
+                    tab_background_color = QColor(theme_background_color).darker(110).name()
 
             # Set font
             font = QFont()
