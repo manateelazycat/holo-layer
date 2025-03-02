@@ -49,10 +49,6 @@ class SortTab(QObject):
         self.tab_icon_padding_right = 10 # padding between tab icon and tab text
         self.tab_translate_offset = 60 # translate offset, ensure that users can see whether there are other tabs around current tab
 
-        # Adjust icon size for macOS Retina displays
-        if platform.system() == "Darwin":
-            self.tab_icon_size = 8  # Smaller icon size for macOS
-
         # Create icon cache directory.
         self.icon_cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "icon_cache")
         if not os.path.exists(self.icon_cache_dir):
@@ -233,23 +229,18 @@ class SortTab(QObject):
                 # Draw icon
                 if icon_path and os.path.exists(icon_path):
                     icon = QIcon(icon_path)
-                    # Adjust icon position and size for macOS
-                    if platform.system() == "Darwin":
-                        # Get the device pixel ratio
-                        device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
-                        # Adjust icon size based on device pixel ratio
-                        icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
-                        # Center the icon vertically
-                        icon_y = y + (tab_height - icon_size) / 2
-                        icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
-                                          icon_y,
-                                          icon_size, 
-                                          icon_size)
-                    else:
-                        icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
-                                          y + (tab_height - self.tab_icon_size) / 2,
-                                          self.tab_icon_size, 
-                                          self.tab_icon_size)
+
+                    # Get the device pixel ratio
+                    device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
+                    # Adjust icon size based on device pixel ratio
+                    icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
+                    # Center the icon vertically
+                    icon_y = y + (tab_height - icon_size) / 2
+                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x,
+                                      icon_y,
+                                      icon_size,
+                                      icon_size)
+
                     icon.paint(painter, icon_rect.toRect())
                 
                 # Draw tab text
@@ -319,23 +310,18 @@ class SortTab(QObject):
                 # Draw icon
                 if icon_path and os.path.exists(icon_path):
                     icon = QIcon(icon_path)
-                    # Adjust icon position and size for macOS
-                    if platform.system() == "Darwin":
-                        # Get the device pixel ratio
-                        device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
-                        # Adjust icon size based on device pixel ratio
-                        icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
-                        # Center the icon vertically
-                        icon_y = y + (tab_height - icon_size) / 2
-                        icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
-                                          icon_y,
-                                          icon_size, 
-                                          icon_size)
-                    else:
-                        icon_rect = QRectF(x + tab_slope + self.tab_padding_x, 
-                                          y + (tab_height - self.tab_icon_size) / 2,
-                                          self.tab_icon_size, 
-                                          self.tab_icon_size)
+
+                    # Get the device pixel ratio
+                    device_pixel_ratio = painter.device().devicePixelRatio() if hasattr(painter.device(), "devicePixelRatio") else 1.0
+                    # Adjust icon size based on device pixel ratio
+                    icon_size = self.tab_icon_size / device_pixel_ratio if device_pixel_ratio > 1.0 else self.tab_icon_size
+                    # Center the icon vertically
+                    icon_y = y + (tab_height - icon_size) / 2
+                    icon_rect = QRectF(x + tab_slope + self.tab_padding_x,
+                                      icon_y,
+                                      icon_size,
+                                      icon_size)
+
                     icon.paint(painter, icon_rect.toRect())
                 
                 # Draw tab text
