@@ -6,9 +6,9 @@ HoloLayer 是一个专为 Emacs 设计的多媒体图层插件， 它基于 PyQt
 ## 安装
 1. 安装 Emacs 28 及以上版本 
 2. 安装 Python 依赖: 
- - Linux: `pip3 install epc sexpdata six pynput inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (ArchLinux 请用 pacman 来安装 PyQt6)
- - Windows: `pip3 install epc sexpdata six pynput inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
- - macOS: `pip3 install epc sexpdata six pynput inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - Linux: `pip3 install epc sexpdata six inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (ArchLinux 请用 pacman 来安装 PyQt6)
+ - Windows: `pip3 install epc sexpdata six inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - macOS: `pip3 install epc sexpdata six inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
 3. 用 `git clone` 下载此仓库， 并替换下面配置中的 load-path 路径
 4. 把下面代码加入到你的配置文件 ~/.emacs 中：
 
@@ -81,17 +81,6 @@ windowrulev2 = float,title:(holo_layer.py)
 windowrulev2 = nofocus,title:(holo_layer.py)
 windowrulev2 = noblur,title:(holo_layer.py)
 windowrulev2 = fakefullscreen,title:(holo_layer.py)
-```
-
-## 兼容 Python 3.13
-Python 3.13 会让 pynput 项目产生 ```TypeError: '_thread._ThreadHandle' object is not callable``` 的错误。
-
-pynput master 分支暂时还没有修复这个问题， 可以通过下面的方法来安装修正补丁：
-
-```
-git clone -b fixup/listener-thread-handle https://github.com/moses-palmer/pynput.git
-cd pynput
-sudo pip3 install . --break
 ```
 
 ## 反馈问题

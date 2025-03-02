@@ -6,9 +6,9 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 ## Installation
 1. Install Emacs 28 or above
 2. Install Python dependencies: 
- - Linux: `pip3 install epc sexpdata six pynput inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
- - Windows: `pip3 install epc sexpdata six pynput inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
- - macOS: `pip3 install epc sexpdata six pynput inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - Linux: `pip3 install epc sexpdata six inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
+ - Windows: `pip3 install epc sexpdata six inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - macOS: `pip3 install epc sexpdata six inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
 3. Download this repository using `git clone`, and replace the load-path in the configuration below
 4. Add the following code to your configuration file ~/.emacs:
 
@@ -81,17 +81,6 @@ windowrulev2 = float,title:(holo_layer.py)
 windowrulev2 = nofocus,title:(holo_layer.py)
 windowrulev2 = noblur,title:(holo_layer.py)
 windowrulev2 = fakefullscreen,title:(holo_layer.py)
-```
-
-## Python 3.13 Compatibility
-Python 3.13 causes the pynput project to raise a ```TypeError: '_thread._ThreadHandle' object is not callable``` error.
-
-The pynput master branch hasn't fixed this issue yet. You can install the fix patch using the following method:
-
-```
-git clone -b fixup/listener-thread-handle https://github.com/moses-palmer/pynput.git
-cd pynput
-sudo pip3 install . --break
 ```
 
 ## Feedback Issues

@@ -24,7 +24,7 @@ import sys
 import threading
 
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QColor, QPainter
 
 from PyQt6.QtCore import QRectF
@@ -38,7 +38,6 @@ from plugin.window_number import WindowNumber
 from plugin.window_screenshot import WindowScreenshot
 from plugin.indent_line import IndentLine
 from plugin.type_animation import TypeAnimation
-from pynput.keyboard import Listener as kbListener
 from PyQt6.QtGui import QGuiApplication, QPainterPath
 from utils import *
 
@@ -80,9 +79,10 @@ class HoloLayer:
         self.server_thread = threading.Thread(target=self.server.serve_forever)
         self.server_thread.start()
 
-        # Start key event listener thread.
-        self.key_event_listener = threading.Thread(target=self.listen_key_event)
-        self.key_event_listener.start()
+        # Add timer to periodically check window focus
+        self.focus_check_timer = QTimer()
+        self.focus_check_timer.timeout.connect(self.check_window_focus)
+        self.focus_check_timer.start(200) # Check every 200 milliseconds
 
         # Pass epc port and webengine codec information to Emacs when first start holo-layer.
         eval_in_emacs('holo-layer--first-start', self.server.server_address[1])
@@ -177,24 +177,6 @@ class HoloLayer:
         }
         self.update()
 
-    def listen_key_event(self):
-        while True:
-            with kbListener(
-                    on_press=self.key_press,
-                    on_release=self.key_release) as listener:
-                listener.join()
-
-    def key_press(self, key):
-        pass
-
-    def key_release(self, key):
-        if self.get_active_window_id() == self.get_emacs_id():
-            if not self.holo_window_is_show:
-                self.show_holo_window()
-        else:
-            if self.holo_window_is_show:
-                self.hide_holo_window()
-
     def get_emacs_id(self):
         if platform.system() == "Windows":
             import pygetwindow as gw
@@ -229,6 +211,15 @@ class HoloLayer:
             win_id = response.value[0]
 
             return win_id
+
+    def check_window_focus(self):
+        """Periodically check if Emacs has focus and show/hide holo-layer window accordingly"""
+        if self.get_active_window_id() == self.get_emacs_id():
+            if not self.holo_window_is_show:
+                self.show_holo_window()
+        else:
+            if self.holo_window_is_show:
+                self.hide_holo_window()
 
     def cleanup(self):
         """Do some cleanup before exit python process."""
