@@ -1,6 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QObject, Qt, QRectF, QMimeDatabase
-from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QPainterPath
+from PyQt6.QtGui import QColor, QFontMetrics, QFontDatabase, QFont, QIcon, QPainterPath, QPainter, QBrush
 
 from utils import *
 
@@ -66,11 +66,9 @@ class SortTab(QObject):
         
         # Adjust padding based on device pixel ratio for high DPI displays
         adjusted_padding_x = self.tab_padding_x
-        adjusted_icon_padding = self.tab_icon_padding_right
         if device_pixel_ratio > 1.0 and platform.system() == "Darwin":
             adjusted_padding_x = self.tab_padding_x / device_pixel_ratio
-            adjusted_icon_padding = self.tab_icon_padding_right / device_pixel_ratio
-        
+
         # Draw tab bar background
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
             [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
@@ -93,12 +91,23 @@ class SortTab(QObject):
             
             tab_line_bg = QColor(tab_background_color)
             
-            # Draw tab bar background
+            # We'll draw the background after the tabs to ensure no gaps
             tab_height = sort_tab_info["tab_height"]
+            background_rect = QRectF(emacs_x, emacs_y, emacs_width, tab_height)
             
+            # Save current state
+            painter.save()
+            # Set z-order to be behind tabs
+            # Instead of using composition mode, we'll just draw the background first
+            # and then draw the tabs on top of it
+            painter.restore()  # Restore to the state before we started drawing tabs
+            
+            # Draw background
             painter.setBrush(tab_line_bg)
             painter.setPen(QColor(tab_background_color))
-            painter.drawRect(QRectF(emacs_x, emacs_y, emacs_width, tab_height))
+            painter.drawRect(background_rect)
+            
+            # We're done with the background, no need to restore again
         
         # Use original condition: only draw tabs when tab info and frame info are available
         if "tab_names" in sort_tab_info and emacs_frame_info:
@@ -225,9 +234,12 @@ class SortTab(QObject):
                 path.lineTo(x + tab_width - tab_slope - corner_radius, y)
                 path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
                 # Bottom-right - straight to bottom, no border
-                path.lineTo(x + tab_width, y + tab_height)
+                gap_fix = 1
+                if device_pixel_ratio > 1.0:
+                    gap_fix = device_pixel_ratio
+                path.lineTo(x + tab_width, y + tab_height + gap_fix)
                 # Bottom-left - straight to bottom, no border
-                path.lineTo(x, y + tab_height)
+                path.lineTo(x, y + tab_height + gap_fix)
                 # Top-left rounded corner
                 path.lineTo(x + tab_slope, y + corner_radius)
                 path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
@@ -306,9 +318,12 @@ class SortTab(QObject):
                 path.lineTo(x + tab_width - tab_slope - corner_radius, y)
                 path.arcTo(x + tab_width - tab_slope - corner_radius * 2, y, corner_radius * 2, corner_radius * 2, 90, -90)
                 # Bottom-right - straight to bottom, no border
-                path.lineTo(x + tab_width, y + tab_height)
+                gap_fix = 1
+                if device_pixel_ratio > 1.0:
+                    gap_fix = device_pixel_ratio
+                path.lineTo(x + tab_width, y + tab_height + gap_fix)
                 # Bottom-left - straight to bottom, no border
-                path.lineTo(x, y + tab_height)
+                path.lineTo(x, y + tab_height + gap_fix)
                 # Top-left rounded corner
                 path.lineTo(x + tab_slope, y + corner_radius)
                 path.arcTo(x + tab_slope, y, corner_radius * 2, corner_radius * 2, 180, -90)
