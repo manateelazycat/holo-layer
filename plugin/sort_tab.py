@@ -9,8 +9,9 @@ import platform
 
 # File extension to MIME lookup table
 FILE_SUFFIX_MIME_DICT = {
-    "json": "application-json",
-    "vue": "application-javascript"
+    "json" : "application-json",
+    "vue"  : "application-javascript",
+    "el"   : "text-x-emacs-lisp"
 }
 
 # Mode to icon lookup table
