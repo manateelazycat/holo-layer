@@ -11,7 +11,8 @@ import platform
 FILE_SUFFIX_MIME_DICT = {
     "json" : "application-json",
     "vue"  : "application-javascript",
-    "el"   : "text-x-emacs-lisp"
+    "el"   : "text-x-emacs-lisp",
+    "py"   : "text-x-python"
 }
 
 # Mode to icon lookup table
