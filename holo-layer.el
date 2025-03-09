@@ -995,6 +995,12 @@ Including title-bar, menu-bar, offset depends on window system, and border."
   ;; Need call `holo-layer-start-process' immediately, otherwise we can't see sort-tab when Emacs start and nothing to touch.
   (holo-layer-start-process))
 
+(defun holo-layer--load-theme (&rest _ignores)
+  (when (and holo-layer-sort-tab-ui
+             holo-layer--sort-tab-is-load-p)
+    (sort-tab-update-list)))
+(advice-add #'load-theme :after #'holo-layer--load-theme)
+
 (provide 'holo-layer)
 
 ;;; holo-layer.el ends here
