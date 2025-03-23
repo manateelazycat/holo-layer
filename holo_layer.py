@@ -255,9 +255,8 @@ class HoloWindow(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.screen_index = 0
-        self.screen = QGuiApplication.primaryScreen()
-        self.screen_geometry = self.screen.availableGeometry()
-        self.setGeometry(self.screen_geometry)
+        self.screens = QGuiApplication.screens()
+        self.update_screen_geometry()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -268,13 +267,26 @@ class HoloWindow(QWidget):
 
         self.show_up()
 
+    def update_screen_geometry(self):
+        # Get the screen based on screen_index
+        if 0 <= self.screen_index < len(self.screens):
+            self.screen = self.screens[self.screen_index]
+        else:
+            self.screen = QGuiApplication.primaryScreen()
+            
+        self.screen_geometry = self.screen.geometry()
+        self.setGeometry(self.screen_geometry)
+        
+        # Update window position bias based on screen position
+        self.window_bias_x = self.screen_geometry.x()
+        self.window_bias_y = self.screen_geometry.y()
+
     def show_up(self):
         if not self.isVisible():
             window_flags = Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowTransparentForInput | Qt.WindowType.WindowDoesNotAcceptFocus
             if platform.system() == "Darwin":
                 window_flags |= Qt.WindowType.NoDropShadowWindowHint
                 self.setWindowFlags(window_flags)
-                self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
                 self.show()
             else:
                 # Why use `Tool and X11BypassWindowManagerHint` flag for holo-layer fullsreen window?
@@ -288,8 +300,10 @@ class HoloWindow(QWidget):
                     window_flags |= Qt.WindowType.Tool
                     window_flags |= Qt.WindowType.X11BypassWindowManagerHint
                 self.setWindowFlags(window_flags)
-                self.window_bias_x, self.window_bias_y = 0, 0
                 self.showFullScreen()
+
+            # Move window to correct screen after showing
+            self.move(self.window_bias_x, self.window_bias_y)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -359,14 +373,10 @@ class HoloWindow(QWidget):
         self.update()
 
     def update_screen_geometry_info(self, screen_index):
-        if platform.system() != "Darwin":
-            return
         if screen_index != self.screen_index:
             self.screen_index = screen_index
-            self.screen = super().screen().virtualSiblings()[screen_index]
-            self.screen_geometry = self.screen.availableGeometry()
-            self.window_bias_x, self.window_bias_y = self.screen_geometry.x(), self.screen_geometry.y()
-            self.setGeometry(self.screen_geometry)
+            self.update_screen_geometry()
+            # Update window position when screen changes
             self.move(self.window_bias_x, self.window_bias_y)
 
     def update_info(self, emacs_frame_info, window_info, cursor_info, menu_info, sort_tab_info, is_insert_command):
