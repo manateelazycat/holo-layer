@@ -87,7 +87,7 @@ class PlaceInfo(QObject):
         except:
             return word
 
-    def draw(self, painter, window_info, emacs_frame_info, word):
+    def draw(self, painter, window_info, emacs_frame_info, word, cursor_info):
         if self.show_info and len(window_info) > 0:
             self.theme_mode = get_emacs_func_result("get-theme-mode")
             self.text_color = get_emacs_func_result("get-theme-foreground")
@@ -103,10 +103,16 @@ class PlaceInfo(QObject):
 
             search_word = word if word in self.words else self.singular_word(word)
 
+            # Init rectangle vars.
+            [x, y, w, h] = emacs_frame_info
+            first_window_y = y + h
+
+            if cursor_info == "":
+                cursor_x = 0
+            else:
+                cursor_x = int(cursor_info.split(":")[0])
+
             if search_word and search_word in self.words:
-                # Init rectangle vars.
-                [x, y, w, h] = emacs_frame_info
-                first_window_y = y + h
 
                 # Calculate y coordinate of toppest window.
                 for info in window_info:
@@ -129,12 +135,17 @@ class PlaceInfo(QObject):
                     text_width = max(list(map(lambda t: metrics.horizontalAdvance(t), text_lines)))
 
                     # Calculate render rectangle.
-                    text_rect = metrics.boundingRect(x + w - text_width - self.margin - self.padding_horizontal,
-                                                     first_window_y + self.margin + self.padding_vertical,
-                                                     text_width,
-                                                     9999,  # some large height to accommodate the content
-                                                     Qt.AlignmentFlag.AlignRight,
-                                                     text_content)
+                    if cursor_x > w * 0.8:
+                        text_x = self.margin + self.padding_horizontal
+                    else:
+                        text_x = x + w - text_width - self.margin - self.padding_horizontal
+                    text_rect = metrics.boundingRect(
+                        text_x,
+                        first_window_y + self.margin + self.padding_vertical,
+                        text_width,
+                        9999,  # some large height to accommodate the content
+                        Qt.AlignmentFlag.AlignRight,
+                        text_content)
 
                     background_rect = QRectF(text_rect)
                     background_rect = background_rect.adjusted(-self.padding_horizontal,

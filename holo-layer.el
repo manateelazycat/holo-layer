@@ -779,8 +779,11 @@ Including title-bar, menu-bar, offset depends on window system, and border."
                   ""
                 (if mark-active
                     (buffer-substring-no-properties (region-beginning) (region-end))
-                  (thing-at-point 'word t)))))
-    (holo-layer-call-async "update_place_info" (if word word ""))))
+                  (thing-at-point 'word t))))
+        (cursor-info (ignore-errors (holo-layer-get-cursor-info))))
+    (holo-layer-call-async "update_place_info"
+                           (if word word "")
+                           (if cursor-info cursor-info ""))))
 
 (setq holo-layer-place-info-last-buffer nil)
 
@@ -790,7 +793,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
     (when (and holo-layer-place-info-last-buffer
                (not (eq holo-layer-place-info-last-buffer current))
                (not (minibufferp)))
-      (holo-layer-call-async "update_place_info" ""))
+      (holo-layer-call-async "update_place_info" "" ""))
     (setq holo-layer-place-info-last-buffer current)))
 
 (add-hook 'window-configuration-change-hook 'holo-layer-hide-place-info)

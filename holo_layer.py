@@ -137,8 +137,8 @@ class HoloLayer:
 
         self.holo_window.update_info(self.emacs_frame_info, self.window_info, self.cursor_info, self.menu_info, self.sort_tab_info, self.is_insert_command)
 
-    def update_place_info(self, word):
-        self.holo_window.update_place_info(word)
+    def update_place_info(self, word, cursor_info):
+        self.holo_window.update_place_info(word, cursor_info)
 
     def update_indent_info(self, emacs_indent_infos):
         self.holo_window.update_indent_info(emacs_indent_infos)
@@ -238,6 +238,7 @@ class HoloWindow(QWidget):
         self.window_info = []
         self.sort_tab_info = {}
         self.place_word = ""
+        self.place_cursor_info = ""
 
         self.window_border = WindowBorder()
         self.window_number = WindowNumber()
@@ -329,7 +330,7 @@ class HoloWindow(QWidget):
 
         self.window_border.draw(painter, self.window_info, self.emacs_frame_info)
 
-        self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word)
+        self.place_info.draw(painter, self.window_info, self.emacs_frame_info, self.place_word, self.place_cursor_info)
 
         if self.show_window_number_flag:
             self.window_number.draw(painter, self.window_info, self.emacs_frame_info)
@@ -360,11 +361,12 @@ class HoloWindow(QWidget):
                 if total_mask is not None:
                     painter.setClipPath(emacs_area - total_mask, Qt.ClipOperation.IntersectClip)
 
-    def update_place_info(self, word):
+    def update_place_info(self, word, cursor_info):
         word = word.lower()
 
-        if self.place_word != word:
+        if self.place_word != word and self.place_cursor_info != cursor_info:
             self.place_word = word
+            self.place_cursor_info = cursor_info
 
         self.update()
 
@@ -373,6 +375,9 @@ class HoloWindow(QWidget):
         self.update()
 
     def update_screen_geometry_info(self, screen_index):
+        if not isinstance(screen_index, int):
+            return
+
         if screen_index != self.screen_index:
             self.screen_index = screen_index
             self.update_screen_geometry()
