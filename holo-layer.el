@@ -226,6 +226,16 @@ Example, if you have dictionary `/usr/share/stardict/dic/stardict-oxford-gb-form
 you need set this value to `/usr/share/stardict/dic/stardict-oxford-gb-formated-2.4.2/oxford-gb-formated', not include `.ifo' extension."
   :type 'string)
 
+(defcustom holo-layer-place-info-light-background-color "#FAFAFC"
+  "The light background use for render place info window.
+
+Only use this value when place info show at top-left corner, meantime, cursor is at right of screen.")
+
+(defcustom holo-layer-place-info-dark-background-color "#242525"
+  "The light background use for render place info window.
+
+Only use this value when place info show at top-left corner, meantime, cursor is at right of screen.")
+
 (defcustom holo-layer-enable-window-border nil
   "Show window border if enable this option."
   :type 'boolean)

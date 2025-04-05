@@ -21,9 +21,13 @@ class PlaceInfo(QObject):
 
         [self.show_info,
          self.font_size,
+         self.dark_background_color,
+         self.light_background_color,
          self.search_dictionary] = get_emacs_vars([
             "holo-layer-enable-place-info",
             "holo-layer-place-info-font-size",
+            "holo-layer-place-info-dark-background-color",
+            "holo-layer-place-info-light-background-color",
             "holo-layer-place-info-dictionary"])
 
         self.font_family = QFontDatabase.systemFont(
@@ -96,11 +100,6 @@ class PlaceInfo(QObject):
             self.text_color = QColor(self.text_color)
             self.background_color = QColor(QColor(self.background_color).darker().name())
 
-            if self.theme_mode == "dark":
-                self.background_color.setAlpha(220)
-            else:
-                self.background_color.setAlpha(50)
-
             search_word = word if word in self.words else self.singular_word(word)
 
             # Init rectangle vars.
@@ -111,6 +110,21 @@ class PlaceInfo(QObject):
                 cursor_x = 0
             else:
                 cursor_x = int(cursor_info.split(":")[0])
+
+            if cursor_x > w * 0.8:
+                # Don't transparent background when place info need show at left,
+                # make sure information in place info window is clear
+                if self.theme_mode == "dark":
+                    self.background_color = QColor(self.dark_background_color)
+                else:
+                    self.background_color = QColor(self.light_background_color)
+            else:
+                # Transparent background when place info show at right,
+                # most time, top-right corner is empty.
+                if self.theme_mode == "dark":
+                    self.background_color.setAlpha(220)
+                else:
+                    self.background_color.setAlpha(50)
 
             if search_word and search_word in self.words:
 
@@ -158,6 +172,9 @@ class PlaceInfo(QObject):
                     roundness = 5
                     path.addRoundedRect(background_rect, roundness, roundness)
                     painter.fillPath(path, painter.brush())
+
+                    if cursor_x > w * 0.8:
+                        pass
 
                     # Draw translation.
                     painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
