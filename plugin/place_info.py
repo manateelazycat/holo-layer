@@ -173,8 +173,10 @@ class PlaceInfo(QObject):
                     path.addRoundedRect(background_rect, roundness, roundness)
                     painter.fillPath(path, painter.brush())
 
+                    # Draw border with text color
                     if cursor_x > w * 0.8:
-                        pass
+                        painter.setPen(self.text_color)
+                        painter.drawPath(path)
 
                     # Draw translation.
                     painter.drawText(text_rect, Qt.AlignmentFlag.AlignRight, text_content)
