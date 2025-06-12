@@ -88,7 +88,12 @@ class SortTab(QObject):
         # Draw tab bar background
         if "emacs_theme_mode" in sort_tab_info and emacs_frame_info and len(sort_tab_info["tab_names"]) > 0:
             [emacs_x, emacs_y, emacs_width, emacs_height] = emacs_frame_info
-            
+
+            # Clip emacs frame, otherwise tab
+            emacs_area = QPainterPath()
+            emacs_area.addRect(QRectF(emacs_x, emacs_y, emacs_width, emacs_height))
+            painter.setClipPath(emacs_area, Qt.ClipOperation.IntersectClip)
+
             # Get emacs theme colors.
             theme_mode = sort_tab_info["emacs_theme_mode"]
             theme_background_color = sort_tab_info["emacs_theme_background_color"]
