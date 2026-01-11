@@ -6,9 +6,9 @@ HoloLayer is a multimedia layer plugin specifically designed for Emacs. It is de
 ## Installation
 1. Install Emacs 28 or above
 2. Install Python dependencies: 
- - Linux: `pip3 install epc sexpdata six inflect PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
- - Windows: `pip3 install epc sexpdata six inflect pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
- - macOS: `pip3 install epc sexpdata six inflect pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - Linux: `pip3 install epc sexpdata six inflect python-xlib PyQt6 PyQt6-Qt6 PyQt6-sip` (For ArchLinux, please use pacman to install PyQt6)
+ - Windows: `pip3 install epc sexpdata six inflect python-xlib pygetwindow PyQt6 PyQt6-Qt6 PyQt6-sip`
+ - macOS: `pip3 install epc sexpdata six inflect python-xlib pyobjc PyQt6 PyQt6-Qt6 PyQt6-sip`
 3. Download this repository using `git clone`, and replace the load-path in the configuration below
 4. Add the following code to your configuration file ~/.emacs:
 
