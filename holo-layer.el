@@ -106,6 +106,7 @@
                (holo-layer-epc-define-method mngr 'get-emacs-var 'holo-layer--get-emacs-var-func)
                (holo-layer-epc-define-method mngr 'get-emacs-vars 'holo-layer--get-emacs-vars-func)
                (holo-layer-epc-define-method mngr 'get-user-emacs-directory 'holo-layer--user-emacs-directory)
+               (holo-layer-epc-define-method mngr 'frame-focus-state 'frame-focus-state)
                (holo-layer-epc-define-method mngr 'get-emacs-id 'holo-layer--get-emacs-id)
                (holo-layer-epc-define-method mngr 'get-emacs-name 'holo-layer--get-emacs-name)
                (holo-layer-epc-define-method mngr 'get-theme-mode 'holo-layer-get-theme-mode)
@@ -515,7 +516,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
           width
           height
           (cl-position (frame-monitor-geometry) (display-monitor-attributes-list)
-                       :test (lambda (f attr) (equal f (cdr (car attr))))))))
+                       :test (lambda (f attr) (equal f (alist-get 'geometry attr)))))))
 
 (defun holo-layer-eaf-fullscreen-p ()
   (and (featurep 'eaf)
@@ -588,6 +589,7 @@ Including title-bar, menu-bar, offset depends on window system, and border."
 
 (defun holo-layer-monitor-configuration-change (&rest _)
   "Detecting a window configuration change."
+  (setq holo-layer-emacs-frame (window-frame))
   (when (and (holo-layer-epc-live-p holo-layer-epc-process)
              ;; When current frame is same with `emacs-frame'.
              (equal (window-frame) holo-layer-emacs-frame))
