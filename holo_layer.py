@@ -214,7 +214,7 @@ class HoloLayer:
 
     def check_window_focus(self):
         """Periodically check if Emacs has focus and show/hide holo-layer window accordingly"""
-        if self.get_active_window_id() == self.get_emacs_id():
+        if get_emacs_func_result("frame-focus-state"):
             if not self.holo_window_is_show:
                 self.show_holo_window()
         else:
@@ -380,6 +380,7 @@ class HoloWindow(QWidget):
 
         if screen_index != self.screen_index:
             self.screen_index = screen_index
+            self.screens = QGuiApplication.screens()
             self.update_screen_geometry()
             # Update window position when screen changes
             self.move(self.window_bias_x, self.window_bias_y)
